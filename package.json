@@ -1,0 +1,34 @@
+{
+  "name": "@soybeanjs/router-page",
+  "version": "1.0.0",
+  "description": "",
+  "author": {
+    "name": "Soybean",
+    "email": "honghuangdc@gmail.com",
+    "url": "https://github.com/honghuangdc"
+  },
+  "license": "MIT",
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "soybean",
+    "soybeanjs"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup"
+  },
+  "dependencies": {
+    "fast-glob": "^3.2.12"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.5",
+    "eslint-config-soybeanjs": "^0.1.1",
+    "esno": "^0.16.3",
+    "tsup": "^6.3.0",
+    "typescript": "^4.8.4",
+    "vite": "^3.1.8"
+  }
+}
