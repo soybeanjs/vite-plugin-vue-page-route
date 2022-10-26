@@ -25,7 +25,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup"
+    "build": "tsup",
+    "lint": "eslint . --fix",
+    "update-version": "bumpp package.json",
+    "publish-pkg": "pnpm -r publish --access public",
+    "release": "pnpm update-version && pnpm pub",
+    "commit": "node ./node_modules/@soybeanjs/scripts/commit.js"
   },
   "dependencies": {
     "fast-glob": "^3.2.12"
