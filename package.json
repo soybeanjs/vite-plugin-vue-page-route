@@ -1,6 +1,6 @@
 {
   "name": "@soybeanjs/router-page",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "author": {
     "name": "Soybean",
@@ -8,6 +8,10 @@
     "url": "https://github.com/honghuangdc"
   },
   "license": "MIT",
+  "homepage": "https://github.com/honghuangdc/router-page",
+  "repository": {
+    "url": "https://github.com/honghuangdc/router-page.git"
+  },
   "keywords": [
     "vite",
     "vite-plugin",
@@ -17,6 +21,9 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup"
   },
