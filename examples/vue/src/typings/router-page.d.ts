@@ -10,7 +10,9 @@ declare namespace RouterPage {
     | 'about'
     | 'demo'
     | 'home_first'
+    | 'home_four'
     | 'home_second'
-    | 'system-view_404'
-    | 'system-view_login';
+    | 'home_third'
+    | '404'
+    | 'login';
 }

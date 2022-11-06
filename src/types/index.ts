@@ -39,3 +39,7 @@ export interface Options {
    */
   pagesFormatter: (names: string[]) => string[];
 }
+
+export interface ContextOptions extends Options {
+  rootDir: string;
+}

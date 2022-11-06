@@ -5,7 +5,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx';
 import Components from 'unplugin-vue-components/vite';
 import unocss from 'unocss/vite';
 import routerPage from '@soybeanjs/router-page';
-import Inspect from 'vite-plugin-inspect';
+// import Inspect from 'vite-plugin-inspect';
 
 export default defineConfig(() => {
   const rootPath = path.resolve(process.cwd());
@@ -40,8 +40,8 @@ export default defineConfig(() => {
             const SYSTEM_VIEW = 'system-view_';
             return name.replace(SYSTEM_VIEW, '');
           })
-      }),
-      Inspect()
+      })
+      // Inspect()
     ],
     server: {
       host: '0.0.0.0',

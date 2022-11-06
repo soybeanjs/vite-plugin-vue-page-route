@@ -1,6 +1,5 @@
 import type { Plugin } from 'vite';
-import { createPluginOptions } from './utils';
-import { generateDeclaration } from './declaration';
+import { Context } from './context';
 import type { Options } from './types';
 
 /**
@@ -8,13 +7,16 @@ import type { Options } from './types';
  * @description generate router page declaration
  */
 function routerPagePlugin(options?: Partial<Options>) {
-  const pluginOptions = createPluginOptions(options);
+  const context = new Context(options);
 
   const plugin: Plugin = {
     name: 'router-page',
     enforce: 'post',
     configResolved(config) {
-      generateDeclaration(config.root, pluginOptions);
+      context.init(config.root);
+    },
+    configureServer(server) {
+      context.setupFileWatcher(server.watcher);
     }
   };
 

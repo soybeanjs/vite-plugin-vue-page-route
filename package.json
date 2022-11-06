@@ -18,6 +18,9 @@
     "soybean",
     "soybeanjs"
   ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -27,20 +30,32 @@
   "scripts": {
     "build": "tsup",
     "lint": "eslint . --fix",
+    "commit": "soybean git-commit",
+    "esno": "esno",
+    "cleanup": "esno ./scripts/cleanup.ts",
+    "update-pkg": "ncu --deep -u",
     "update-version": "bumpp package.json",
     "publish-pkg": "pnpm -r publish --access public",
     "release": "pnpm update-version && pnpm pub",
-    "commit": "node ./node_modules/@soybeanjs/scripts/commit.js"
+    "sync-pkg": "esno ./scripts/sync.ts",
+    "prepare": "pnpm -r run stub && husky install"
   },
   "dependencies": {
     "fast-glob": "^3.2.12"
   },
   "devDependencies": {
-    "@types/node": "^18.11.5",
-    "eslint-config-soybeanjs": "^0.1.1",
+    "@soybeanjs/cli": "^0.1.2",
+    "@types/node": "^18.11.9",
+    "bumpp": "^8.2.1",
+    "eslint": "^8.27.0",
+    "eslint-config-soybeanjs": "^0.1.2",
     "esno": "^0.16.3",
-    "tsup": "^6.3.0",
+    "husky": "^8.0.1",
+    "npm-check-updates": "^16.3.16",
+    "rimraf": "^3.0.2",
+    "tsup": "^6.4.0",
     "typescript": "^4.8.4",
-    "vite": "^3.1.8"
+    "vite": "^3.2.2",
+    "zx": "^7.1.1"
   }
 }

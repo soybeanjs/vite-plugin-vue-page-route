@@ -7,10 +7,10 @@ import {
   ROOT_ROUTE,
   NOT_FOUND_ROUTE
 } from './constant';
-import type { Options } from './types';
+import type { Options, ContextOptions } from './types';
 
 export function createPluginOptions(opt?: Partial<Options>) {
-  const options: Options = {
+  const options: ContextOptions = {
     dir: DEFAULT_PAGE_DIR,
     excludes: DEFAULT_EXCLUDE_PAGE_DIRS,
     dts: DEFAULT_DTS,
@@ -19,7 +19,8 @@ export function createPluginOptions(opt?: Partial<Options>) {
       root: ROOT_ROUTE,
       notFound: NOT_FOUND_ROUTE
     },
-    pagesFormatter: names => names
+    pagesFormatter: names => names,
+    rootDir: process.cwd()
   };
 
   Object.assign(options, opt);
@@ -27,28 +28,33 @@ export function createPluginOptions(opt?: Partial<Options>) {
   return options;
 }
 
-export function getScanDir(rootDir: string, options: Options) {
-  const { dir, patterns } = options;
+export function getScanDir(options: ContextOptions) {
+  const { rootDir, dir, patterns } = options;
 
   const scanDir = patterns.map(pattern => `${rootDir}/${dir}/**/${pattern}`);
 
   return scanDir;
 }
 
-export function getRouterPageDirs(scanDirs: string[]): string[] {
-  const dirs = fastGlob.sync(scanDirs);
+export function getRouterPageDirs(scanDirs: string[], rootDir: string): string[] {
+  const dirs = fastGlob.sync(scanDirs, {
+    ignore: ['node_modules'],
+    onlyFiles: true,
+    cwd: rootDir,
+    absolute: true
+  });
 
   return dirs;
 }
 
-function transformDirToName(totalDir: string, rootDir: string, options: Options) {
-  const { dir, patterns } = options;
+function getNameFromFilePath(path: string, options: ContextOptions) {
+  const { rootDir, dir, patterns } = options;
 
   const PAGE_DEGREE_SPLIT_MARK = '_';
 
   const prefix = `${rootDir}/${dir}/`;
 
-  let name = totalDir.replace(prefix, '');
+  let name = path.replace(prefix, '');
 
   patterns.forEach(pattern => {
     const suffix = `/${pattern}`;
@@ -61,6 +67,6 @@ function transformDirToName(totalDir: string, rootDir: string, options: Options)
   return name;
 }
 
-export function transformDirsToNames(dirs: string[], rootDir: string, options: Options) {
-  return dirs.map(dir => transformDirToName(dir, rootDir, options));
+export function getNamesFromFilePaths(globs: string[], options: ContextOptions) {
+  return globs.map(path => getNameFromFilePath(path, options));
 }
