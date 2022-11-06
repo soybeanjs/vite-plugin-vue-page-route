@@ -36,7 +36,7 @@
     "update-pkg": "ncu --deep -u",
     "update-version": "bumpp package.json",
     "publish-pkg": "pnpm -r publish --access public",
-    "release": "pnpm update-version && pnpm pub",
+    "release": "pnpm update-version && pnpm publish-pkg",
     "sync-pkg": "esno ./scripts/sync.ts",
     "prepare": "pnpm -r run stub && husky install"
   },
