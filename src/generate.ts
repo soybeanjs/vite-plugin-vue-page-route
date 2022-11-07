@@ -39,22 +39,32 @@ function getViewComponentsCode(namesWithModules: NameWithModule[], options: Cont
     return NUM_REG.test(name);
   };
 
+  const hasShortLine = (name: string) => name.includes('-');
+
+  const formatKey = (name: string) => (hasShortLine(name) ? `'${name}'` : name);
+
+  const formatImportKey = (name: string) => (hasShortLine(name) ? name.replace(/-/g, '') : name);
+
   let code = `\nexport const views: Record<RouterPage.LastDegreeRouteKey, RouteComponent | (() => Promise<RouteComponent>)> = {`;
   namesWithModules.forEach(({ key, module }, index) => {
     const isNotLazy = checkIsNotLazy(key);
 
     if (isNotLazy) {
+      const formatedKey = formatKey(key);
+
       const importKey = isNumberKey(key) ? `_view_${key}` : key;
 
-      importStatement += `import ${importKey} from '${module}';\n`;
+      const formatedImportKey = formatImportKey(importKey);
 
-      if (importKey === key) {
-        code += `\n  ${importKey}`;
+      importStatement += `import ${formatedImportKey} from '${module}';\n`;
+
+      if (formatedKey === key && !isNumberKey(key)) {
+        code += `\n  ${key}`;
       } else {
-        code += `\n  ${key}: ${importKey}`;
+        code += `\n  ${formatedKey}: ${formatedImportKey}`;
       }
     } else {
-      code += `\n  ${key}: () => import('${module}')`;
+      code += `\n  ${formatKey(key)}: () => import('${module}')`;
     }
 
     if (index < namesWithModules.length - 1) {
