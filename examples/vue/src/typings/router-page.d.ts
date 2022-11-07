@@ -7,6 +7,7 @@ declare namespace RouterPage {
 
   /** 页面路由 */
   type PageRouteKey =
+    | '404'
     | 'about'
     | 'demo'
     | 'home'
@@ -14,7 +15,5 @@ declare namespace RouterPage {
     | 'home_four'
     | 'home_second'
     | 'home_third'
-    | 'system-view'
-    | '404'
     | 'login';
 }

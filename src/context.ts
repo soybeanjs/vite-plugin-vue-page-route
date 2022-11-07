@@ -1,6 +1,6 @@
 import type { FSWatcher } from 'fs';
-import { createPluginOptions, getScanDir, getRouterPageDirs, getNamesFromFilePaths } from './utils';
-import { writeDeclaration } from './declaration';
+import { createPluginOptions, getScanDir, getRouterPageDirs, getNamesFromFilePaths, getNamesWithModule } from './utils';
+import { writeDeclaration, writeViewComponents } from './generate';
 import type { ContextOptions, Options } from './types';
 
 export class Context {
@@ -17,7 +17,8 @@ export class Context {
   init(rootDir: string) {
     this.setRootDir(rootDir);
     this.setScanDir();
-    this.generate();
+    this.generateDts();
+    this.generateViewComponents();
   }
 
   private setRootDir(path: string) {
@@ -38,17 +39,22 @@ export class Context {
     writeDeclaration(formatterNames, this.options);
   }
 
-  private generate() {
+  private generateViewComponents() {
+    const namesWithModule = getNamesWithModule(this.globs, this.options);
+    writeViewComponents(namesWithModule, this.options);
+  }
+
+  private generateDts() {
     this.searchGlobs();
     this.generateDeclaration();
   }
 
   setupFileWatcher(watcher: FSWatcher) {
     watcher.on('add', () => {
-      this.generate();
+      this.generateDts();
     });
     watcher.on('unlink', () => {
-      this.generate();
+      this.generateDts();
     });
   }
 }

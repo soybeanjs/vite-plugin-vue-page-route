@@ -27,6 +27,13 @@ export interface Options {
    */
   patterns: string[];
   /**
+   * the prefix of the ignore dir, which will not as the part of route name
+   * default: '_'
+   * 【需要忽略的目录前缀, 匹配到的目录不会作为路由名称的一部分】
+   * 默认: '_'
+   */
+  ignoreDirPrefix: string;
+  /**
    * names of the buildtin routes, which are necessary
    * 【系统内置的路由名称(必须存在的)】
    * root: rootRoute '/' 【根路由】
@@ -42,4 +49,9 @@ export interface Options {
 
 export interface ContextOptions extends Options {
   rootDir: string;
+}
+
+export interface NameWithModule {
+  key: string;
+  module: string;
 }

@@ -4,10 +4,11 @@ import {
   DEFAULT_EXCLUDE_PAGE_DIRS,
   DEFAULT_DTS,
   DEFAULT_PATTERNS,
+  DEFAULT_IGNORE_DIR_PREFIX,
   ROOT_ROUTE,
   NOT_FOUND_ROUTE
 } from './constant';
-import type { Options, ContextOptions } from './types';
+import type { Options, ContextOptions, NameWithModule } from './types';
 
 export function createPluginOptions(opt?: Partial<Options>) {
   const options: ContextOptions = {
@@ -15,6 +16,7 @@ export function createPluginOptions(opt?: Partial<Options>) {
     excludes: DEFAULT_EXCLUDE_PAGE_DIRS,
     dts: DEFAULT_DTS,
     patterns: DEFAULT_PATTERNS,
+    ignoreDirPrefix: DEFAULT_IGNORE_DIR_PREFIX,
     builtinRoute: {
       root: ROOT_ROUTE,
       notFound: NOT_FOUND_ROUTE
@@ -69,7 +71,7 @@ function getNameFromFilePath(path: string, options: ContextOptions) {
   return name;
 }
 
-function getParentNameByName(name: string) {
+function getNamesWithParent(name: string) {
   const names = name.split(PAGE_DEGREE_SPLIT_MARK);
 
   const namesWithParent: string[] = [];
@@ -81,18 +83,62 @@ function getParentNameByName(name: string) {
   return namesWithParent;
 }
 
+/** 转换需要忽略的目录 */
+function transformIgnoreDir(name: string, ignoreDirPrefix: string) {
+  let result = name;
+  if (name.startsWith(ignoreDirPrefix)) {
+    const [, ignoreDir] = name.split(ignoreDirPrefix);
+
+    result = name.replace(ignoreDirPrefix + ignoreDir + PAGE_DEGREE_SPLIT_MARK, '');
+  }
+
+  return result;
+}
+
+function getTransformedNames(globs: string[], options: ContextOptions) {
+  const names = globs.map(path => {
+    const name = getNameFromFilePath(path, options);
+    return transformIgnoreDir(name, options.ignoreDirPrefix);
+  });
+
+  return names;
+}
+
 export function getNamesFromFilePaths(globs: string[], options: ContextOptions) {
-  const names = globs.map(path => getNameFromFilePath(path, options)).sort();
+  const names = getTransformedNames(globs, options).sort();
 
   const allNames: string[] = [];
 
   names.forEach(name => {
-    allNames.push(...getParentNameByName(name));
+    allNames.push(...getNamesWithParent(name));
   });
 
   allNames.sort();
 
-  const result = [...new Set(allNames)];
+  const result = [...new Set(allNames.filter(Boolean))];
 
   return result;
+}
+
+function getModuleStrByGlob(glob: string, options: ContextOptions) {
+  const { rootDir, dir } = options;
+
+  const prefix = `${rootDir}/${dir}/`;
+
+  const module = `./${glob.replace(prefix, '')}`;
+
+  return module;
+}
+
+export function getNamesWithModule(globs: string[], options: ContextOptions): NameWithModule[] {
+  const names = globs.map(path => {
+    const name = getNameFromFilePath(path, options);
+    const key = transformIgnoreDir(name, options.ignoreDirPrefix);
+    return {
+      key,
+      module: getModuleStrByGlob(path, options)
+    };
+  });
+
+  return names;
 }

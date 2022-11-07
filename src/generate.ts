@@ -1,10 +1,11 @@
 import { writeFile } from 'fs/promises';
-import type { ContextOptions } from './types';
+import type { ContextOptions, NameWithModule } from './types';
 
 export async function writeDeclaration(names: string[], options: ContextOptions) {
   const code = getDeclaration(names, options);
 
   const filePath = `${options.rootDir}/${options.dts}`;
+
   await writeFile(filePath, code, 'utf-8');
 }
 
@@ -19,4 +20,25 @@ function getDeclaration(names: string[], options: ContextOptions) {
   code += ';\n}\n';
 
   return code;
+}
+
+function getViewComponentsCode(namesWithModules: NameWithModule[]) {
+  let code = `export const views = {`;
+  namesWithModules.forEach(({ key, module }, index) => {
+    code += `\n  ${key}: import('${module}')`;
+    if (index < namesWithModules.length - 1) {
+      code += ',';
+    }
+  });
+  code += '\n};\n';
+
+  return code;
+}
+
+export async function writeViewComponents(namesWithModules: NameWithModule[], options: ContextOptions) {
+  const code = getViewComponentsCode(namesWithModules);
+
+  const filePath = `${options.rootDir}/${options.dir}/index.ts`;
+
+  await writeFile(filePath, code, 'utf-8');
 }
