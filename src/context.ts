@@ -34,9 +34,11 @@ export class Context {
   }
 
   private generateDeclaration() {
-    const names = getNamesFromFilePaths(this.globs, this.options);
-    const formatterNames = this.options.pagesFormatter(names);
-    writeDeclaration(formatterNames, this.options);
+    const { names, namesWithFile } = getNamesFromFilePaths(this.globs, this.options);
+    const formatedNames = this.options.pagesFormatter(names);
+    const formatedNamesWithFile = this.options.pagesFormatter(namesWithFile);
+
+    writeDeclaration(formatedNames, formatedNamesWithFile, this.options);
   }
 
   private generateViewComponents() {

@@ -21,6 +21,7 @@ export function createPluginOptions(opt?: Partial<Options>) {
       root: ROOT_ROUTE,
       notFound: NOT_FOUND_ROUTE
     },
+    notLazyRoutes: [],
     pagesFormatter: names => names,
     rootDir: process.cwd()
   };
@@ -105,19 +106,22 @@ function getTransformedNames(globs: string[], options: ContextOptions) {
 }
 
 export function getNamesFromFilePaths(globs: string[], options: ContextOptions) {
-  const names = getTransformedNames(globs, options).sort();
+  const namesWithFile = getTransformedNames(globs, options).sort();
 
   const allNames: string[] = [];
 
-  names.forEach(name => {
+  namesWithFile.forEach(name => {
     allNames.push(...getNamesWithParent(name));
   });
 
   allNames.sort();
 
-  const result = [...new Set(allNames.filter(Boolean))];
+  const names = [...new Set(allNames.filter(Boolean))];
 
-  return result;
+  return {
+    names,
+    namesWithFile
+  };
 }
 
 function getModuleStrByGlob(glob: string, options: ContextOptions) {

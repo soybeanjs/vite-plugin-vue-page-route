@@ -6,7 +6,7 @@ declare namespace RouterPage {
   type NotFoundRouteKey = 'not-found';
 
   /** 页面路由 */
-  type PageRouteKey =
+  type RouteKey =
     | '404'
     | 'about'
     | 'demo'
@@ -16,4 +16,7 @@ declare namespace RouterPage {
     | 'home_second'
     | 'home_third'
     | 'login';
+
+  /** 最后一级路由(该级路有对应的vue文件) */
+  type LastDegreeRouteKey = Extract<RouteKey, '404' | 'about' | 'demo' | 'home_first' | 'home_four' | 'home_second' | 'home_third' | 'login'>
 }

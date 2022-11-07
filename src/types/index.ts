@@ -41,6 +41,11 @@ export interface Options {
    */
   builtinRoute: { root: string; notFound: string };
   /**
+   * the route's components imported directly, not lazy
+   * 【路由的组件不是懒加载的】
+   */
+  notLazyRoutes: string[];
+  /**
    * the page names formatter
    * 【页面名称格式化函数】
    */
