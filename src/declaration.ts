@@ -16,7 +16,7 @@ function getDeclaration(names: string[], options: ContextOptions) {
   names.forEach(name => {
     code += `\n    | '${name}'`;
   });
-  code += ';\n}';
+  code += ';\n}\n';
 
   return code;
 }

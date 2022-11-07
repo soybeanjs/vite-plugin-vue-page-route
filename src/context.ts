@@ -29,7 +29,7 @@ export class Context {
   }
 
   private searchGlobs() {
-    this.globs = getRouterPageDirs(this.scanDir, this.options.rootDir);
+    this.globs = getRouterPageDirs(this.scanDir, this.options);
   }
 
   private generateDeclaration() {

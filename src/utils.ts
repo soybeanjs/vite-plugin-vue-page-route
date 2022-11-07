@@ -29,28 +29,30 @@ export function createPluginOptions(opt?: Partial<Options>) {
 }
 
 export function getScanDir(options: ContextOptions) {
-  const { rootDir, dir, patterns } = options;
+  const { rootDir, dir, patterns, excludes } = options;
 
   const scanDir = patterns.map(pattern => `${rootDir}/${dir}/**/${pattern}`);
 
-  return scanDir;
+  const excludeDirs: string[] = excludes.map(item => `!${rootDir}/${dir}/**/${item}`);
+
+  return scanDir.concat(excludeDirs);
 }
 
-export function getRouterPageDirs(scanDirs: string[], rootDir: string): string[] {
+export function getRouterPageDirs(scanDirs: string[], options: ContextOptions): string[] {
   const dirs = fastGlob.sync(scanDirs, {
     ignore: ['node_modules'],
     onlyFiles: true,
-    cwd: rootDir,
+    cwd: options.rootDir,
     absolute: true
   });
 
   return dirs;
 }
 
+const PAGE_DEGREE_SPLIT_MARK = '_';
+
 function getNameFromFilePath(path: string, options: ContextOptions) {
   const { rootDir, dir, patterns } = options;
-
-  const PAGE_DEGREE_SPLIT_MARK = '_';
 
   const prefix = `${rootDir}/${dir}/`;
 
@@ -61,12 +63,36 @@ function getNameFromFilePath(path: string, options: ContextOptions) {
 
     name = name.replace(suffix, '');
 
-    name = name.replace('/', PAGE_DEGREE_SPLIT_MARK);
+    name = name.replace(/\//g, PAGE_DEGREE_SPLIT_MARK);
   });
 
   return name;
 }
 
+function getParentNameByName(name: string) {
+  const names = name.split(PAGE_DEGREE_SPLIT_MARK);
+
+  const namesWithParent: string[] = [];
+
+  for (let i = 1; i <= names.length; i += 1) {
+    namesWithParent.push(names.slice(0, i).reduce((pre, cur) => pre + PAGE_DEGREE_SPLIT_MARK + cur));
+  }
+
+  return namesWithParent;
+}
+
 export function getNamesFromFilePaths(globs: string[], options: ContextOptions) {
-  return globs.map(path => getNameFromFilePath(path, options));
+  const names = globs.map(path => getNameFromFilePath(path, options)).sort();
+
+  const allNames: string[] = [];
+
+  names.forEach(name => {
+    allNames.push(...getParentNameByName(name));
+  });
+
+  allNames.sort();
+
+  const result = [...new Set(allNames)];
+
+  return result;
 }

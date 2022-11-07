@@ -9,10 +9,12 @@ declare namespace RouterPage {
   type PageRouteKey =
     | 'about'
     | 'demo'
+    | 'home'
     | 'home_first'
     | 'home_four'
     | 'home_second'
     | 'home_third'
+    | 'system-view'
     | '404'
     | 'login';
 }
