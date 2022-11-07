@@ -135,7 +135,7 @@ function getModuleStrByGlob(glob: string, options: ContextOptions) {
 }
 
 export function getNamesWithModule(globs: string[], options: ContextOptions): NameWithModule[] {
-  const names = globs.map(path => {
+  const names = [...globs].sort().map(path => {
     const name = getNameFromFilePath(path, options);
     const key = transformIgnoreDir(name, options.ignoreDirPrefix);
     return {

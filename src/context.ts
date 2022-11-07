@@ -17,8 +17,7 @@ export class Context {
   init(rootDir: string) {
     this.setRootDir(rootDir);
     this.setScanDir();
-    this.generateDts();
-    this.generateViewComponents();
+    this.generate();
   }
 
   private setRootDir(path: string) {
@@ -51,12 +50,17 @@ export class Context {
     this.generateDeclaration();
   }
 
+  private generate() {
+    this.generateDts();
+    this.generateViewComponents();
+  }
+
   setupFileWatcher(watcher: FSWatcher) {
     watcher.on('add', () => {
-      this.generateDts();
+      this.generate();
     });
     watcher.on('unlink', () => {
-      this.generateDts();
+      this.generate();
     });
   }
 }
