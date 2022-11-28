@@ -1,13 +1,6 @@
 import { writeFile } from 'fs/promises';
+import { getRouteModuleFromPath } from './utils';
 import type { ContextOptions, NameWithModule } from './types';
-
-export async function writeDeclaration(names: string[], namesWithFile: string[], options: ContextOptions) {
-  const code = getDeclaration(names, namesWithFile, options);
-
-  const filePath = `${options.rootDir}/${options.dts}`;
-
-  await writeFile(filePath, code, 'utf-8');
-}
 
 function getDeclaration(names: string[], namesWithFile: string[], options: ContextOptions) {
   const { root, notFound } = options.builtinRoute;
@@ -29,10 +22,18 @@ function getDeclaration(names: string[], namesWithFile: string[], options: Conte
   return code;
 }
 
+export async function writeDeclaration(names: string[], namesWithFile: string[], options: ContextOptions) {
+  const code = getDeclaration(names, namesWithFile, options);
+
+  const filePath = `${options.rootDir}/${options.dts}`;
+
+  await writeFile(filePath, code, 'utf-8');
+}
+
 function getViewComponentsCode(namesWithModules: NameWithModule[], options: ContextOptions) {
   let importStatement = `import type { RouteComponent } from 'vue-router';\n`;
 
-  const checkIsNotLazy = (name: string) => options.notLazyRoutes.findIndex(item => item === name) > -1;
+  const checkIsNotLazy = (name: string) => options.noLazy.findIndex(item => item === name) > -1;
 
   const isNumberKey = (name: string) => {
     const NUM_REG = /^\d+$/;
@@ -45,7 +46,7 @@ function getViewComponentsCode(namesWithModules: NameWithModule[], options: Cont
 
   const formatImportKey = (name: string) => (hasShortLine(name) ? name.replace(/-/g, '') : name);
 
-  let code = `\nexport const views: Record<RouterPage.LastDegreeRouteKey, RouteComponent | (() => Promise<RouteComponent>)> = {`;
+  let code = `\nexport const views: Record<\n  RouterPage.LastDegreeRouteKey,\n  RouteComponent | (() => Promise<{ default: RouteComponent }>)\n> = {`;
   namesWithModules.forEach(({ key, module }, index) => {
     const isNotLazy = checkIsNotLazy(key);
 
@@ -82,4 +83,12 @@ export async function writeViewComponents(namesWithModules: NameWithModule[], op
   const filePath = `${options.rootDir}/${options.dir}/index.ts`;
 
   await writeFile(filePath, code, 'utf-8');
+}
+
+function getModuleCode(path: string, type: 'add' | 'unlink', options: ContextOptions) {
+  getRouteModuleFromPath(path, type, options);
+}
+
+export function writeModuleCode(path: string, type: 'add' | 'unlink', options: ContextOptions) {
+  getModuleCode(path, type, options);
 }

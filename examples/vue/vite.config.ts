@@ -33,7 +33,7 @@ export default defineConfig(() => {
         types: [{ from: 'vue-router', names: ['RouterLink', 'RouterView'] }]
       }),
       unocss(),
-      routerPage({ notLazyRoutes: ['about', '404', 'home_second-page'] }),
+      routerPage({ noLazy: ['about', '404', 'home_second-page'] }),
       Inspect()
     ],
     server: {

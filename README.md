@@ -14,16 +14,13 @@ export default defineConfig({
     excludes: ['components'], // 默认值
     dts: 'src/typings/router-page.d.ts', // 默认值
     patterns: ['index.vue'], // 默认值
+    ignoreDirPrefix: '_',
     builtinRoute: { // 默认值
       root: 'root',
       notFound: 'not-found'
     },
-    pagesFormatter: names =>
-      names.map(name => {
-        /** 系统的内置路由，该文件夹名称不作为RouteKey */
-        const SYSTEM_VIEW = 'system-view_';
-        return name.replace(SYSTEM_VIEW, '');
-      })
+    notLazyRoutes: [], // 默认值
+    pagesFormatter: names => names // 默认
   })]
 });
 ```
