@@ -1,5 +1,6 @@
-import { access, readFile } from 'fs/promises';
+import { access, readFile, writeFile } from 'fs/promises';
 import fastGlob from 'fast-glob';
+import execa from 'execa';
 import {
   DEFAULT_PAGE_DIR,
   DEFAULT_EXCLUDE_PAGE_DIRS,
@@ -258,6 +259,11 @@ export async function getRouteModuleFromPath(path: string, type: 'add' | 'unlink
     )};\n\nexport default ${moduleName};`;
 
     code = moduleStr;
+    const filePath = getRouteModuleFilePath(moduleName, options);
+
+    await writeFile(filePath, code, 'utf-8');
+
+    handleEslintFormat(filePath);
   }
 
   if (exist) {
@@ -278,4 +284,16 @@ export function isViewsFileChange(path: string, options: ContextOptions) {
   const hasPattern = patterns.some(pattern => path.includes(pattern));
 
   return isViewsFile && hasPattern;
+}
+
+async function handleEslintFormat(filePath: string) {
+  const eslintBinPath = `${process.cwd()}/node_modules/eslint/bin/eslint.js`;
+
+  try {
+    await access(eslintBinPath);
+
+    execa('node', [eslintBinPath, filePath, '--fix']);
+  } catch {
+    //
+  }
 }

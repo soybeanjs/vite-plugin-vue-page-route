@@ -41,6 +41,7 @@
     "prepare": "pnpm -r run stub && husky install"
   },
   "dependencies": {
+    "execa": "5.1.1",
     "fast-glob": "^3.2.12"
   },
   "devDependencies": {
