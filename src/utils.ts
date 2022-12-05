@@ -1,4 +1,4 @@
-import { access, readFile, writeFile } from 'fs/promises';
+import { access, writeFile, unlink } from 'fs/promises';
 import fastGlob from 'fast-glob';
 import execa from 'execa';
 import {
@@ -228,6 +228,19 @@ function getRouteModuleByNames(names: string[]) {
   return modules;
 }
 
+function removeRoute(routeName: string, children?: RouteModule[]) {
+  if (!children || !children.length) return;
+  const findIndex = children.findIndex(item => item.name === routeName);
+
+  if (findIndex > -1) {
+    children.splice(findIndex, 1);
+  } else {
+    children.forEach(item => {
+      removeRoute(routeName, item.children || []);
+    });
+  }
+}
+
 export async function getRouteModuleFromPath(path: string, type: 'add' | 'unlink', options: ContextOptions) {
   const name = getNameFromFilePath(path, options);
   const names = getNamesWithParent(name);
@@ -243,6 +256,7 @@ export async function getRouteModuleFromPath(path: string, type: 'add' | 'unlink
   const moduleName = names[0];
 
   const exist = await getIsRouteModuleFileExist(moduleName, options);
+  const filePath = getRouteModuleFilePath(moduleName, options);
 
   // 路由模块文件不存在，只需处理 add情况
   if (!exist && type === 'add') {
@@ -259,7 +273,6 @@ export async function getRouteModuleFromPath(path: string, type: 'add' | 'unlink
     )};\n\nexport default ${moduleName};`;
 
     code = moduleStr;
-    const filePath = getRouteModuleFilePath(moduleName, options);
 
     await writeFile(filePath, code, 'utf-8');
 
@@ -267,11 +280,28 @@ export async function getRouteModuleFromPath(path: string, type: 'add' | 'unlink
   }
 
   if (exist) {
-    const filePath = getRouteModuleFilePath(moduleName, options);
-    const content = await readFile(filePath, 'utf-8');
+    const importData = await import(filePath);
+    const route = importData.default as RouteModule;
 
-    const startIndex = content.match('{');
-    console.log('startIndex: ', startIndex);
+    if (type === 'unlink') {
+      if (names.length === 1) {
+        unlink(filePath);
+      } else {
+        removeRoute(name, route.children);
+
+        const moduleStr = `const ${moduleName}: ${options.moduleTypeConst} = ${JSON.stringify(
+          route
+        )};\n\nexport default ${moduleName};`;
+
+        code = moduleStr;
+
+        await writeFile(filePath, code, 'utf-8');
+
+        handleEslintFormat(filePath);
+      }
+    } else {
+      //
+    }
   }
 
   return code;
