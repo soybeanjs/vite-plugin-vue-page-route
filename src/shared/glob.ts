@@ -1,4 +1,5 @@
 import fastGlob from 'fast-glob';
+import { getRelativePathFromRoot } from './path';
 import type { PluginOption } from '../types';
 
 /**
@@ -7,10 +8,10 @@ import type { PluginOption } from '../types';
  * @translate 获取页面文件的扫描路径
  */
 export function getScanPathsOfPageFile(options: PluginOption) {
-  const rootDir = process.cwd();
   const { pageFilePattern, excludeDirs } = options;
 
-  const pageDir = getPageDir(options.pageDir, rootDir);
+  const rootDir = process.cwd();
+  const pageDir = getRelativePathFromRoot(options.pageDir);
 
   const paths = pageFilePattern.map(pattern => `${rootDir}/${pageDir}/**/${pattern}`);
   const excludes = excludeDirs.map(dir => `!${rootDir}/${pageDir}/**/${dir}`);
@@ -18,28 +19,6 @@ export function getScanPathsOfPageFile(options: PluginOption) {
   const scanPaths = paths.concat(excludes);
 
   return scanPaths;
-}
-
-function getPageDir(dir: string, rootDir: string) {
-  const containRootDir = dir.includes(rootDir);
-
-  if (containRootDir) {
-    return dir.replace(`${rootDir}/`, '');
-  }
-
-  const isAbsolutePath = dir.startsWith('/');
-
-  if (isAbsolutePath) {
-    return dir.slice(1);
-  }
-
-  const isRelativePath = dir.startsWith('./');
-
-  if (isRelativePath) {
-    return dir.slice(2);
-  }
-
-  return dir;
 }
 
 /**
