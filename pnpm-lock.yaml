@@ -4,20 +4,20 @@ importers:
 
   .:
     specifiers:
+      '@soybeanjs/cli': ^0.1.4
       '@types/node': ^18.11.11
       bumpp: ^8.2.1
-      commitlint: ^17.3.0
-      cz-git: ^1.4.0
-      czg: ^1.4.0
       eslint: ^8.29.0
       eslint-config-soybeanjs: ^0.2.1
       esno: ^0.16.3
       execa: 5.1.1
       fast-glob: ^3.2.12
-      husky: ^8.0.2
+      kolorist: ^1.6.0
+      lint-staged: ^13.1.0
       magic-string: ^0.27.0
       npm-check-updates: ^16.5.1
       rimraf: ^3.0.2
+      simple-git-hooks: ^2.8.1
       tsup: ^6.5.0
       typescript: ^4.9.4
       vite: ^3.2.5
@@ -25,20 +25,20 @@ importers:
     dependencies:
       execa: 5.1.1
       fast-glob: 3.2.12
+      kolorist: 1.6.0
       magic-string: 0.27.0
     devDependencies:
+      '@soybeanjs/cli': 0.1.4
       '@types/node': 18.11.11
       bumpp: 8.2.1
-      commitlint: 17.3.0
-      cz-git: 1.4.0
-      czg: 1.4.0
       eslint: 8.29.0
       eslint-config-soybeanjs: 0.2.1_ha6vam6werchizxrnqvarmz2zu
       esno: 0.16.3
-      husky: 8.0.2
+      lint-staged: 13.1.0
       npm-check-updates: 16.5.1
       rimraf: 3.0.2
-      tsup: 6.5.0_z6wznmtyb6ovnulj6iujpct7um
+      simple-git-hooks: 2.8.1
+      tsup: 6.5.0_typescript@4.9.4
       typescript: 4.9.4
       vite: 3.2.5_@types+node@18.11.11
       zx: 7.1.1
@@ -47,7 +47,7 @@ importers:
     specifiers:
       '@commitlint/cli': ^17.3.0
       '@commitlint/config-conventional': ^17.3.0
-      '@soybeanjs/router-page': workspace:*
+      '@soybeanjs/vite-plugin-vue-page-route': workspace:^0.0.1
       '@types/node': 18.11.11
       '@vitejs/plugin-vue': ^3.2.0
       '@vitejs/plugin-vue-jsx': ^2.1.1
@@ -75,7 +75,7 @@ importers:
     devDependencies:
       '@commitlint/cli': 17.3.0
       '@commitlint/config-conventional': 17.3.0
-      '@soybeanjs/router-page': link:../..
+      '@soybeanjs/vite-plugin-vue-page-route': link:../..
       '@types/node': 18.11.11
       '@vitejs/plugin-vue': 3.2.0_vite@3.2.5+vue@3.2.45
       '@vitejs/plugin-vue-jsx': 2.1.1_vite@3.2.5+vue@3.2.45
@@ -862,6 +862,17 @@ packages:
   /@sindresorhus/is/5.3.0:
     resolution: {integrity: sha512-CX6t4SYQ37lzxicAqsBtxA3OseeoVrh9cSJ5PFYam0GksYlupRfy1A+Q4aYD3zvcfECLc0zO2u+ZnR2UYKvCrw==}
     engines: {node: '>=14.16'}
+    dev: true
+
+  /@soybeanjs/cli/0.1.4:
+    resolution: {integrity: sha512-9z+foDwIwix2CjH39KLfU2lR6qgTko3JqbsIqAU1Egw5OPTC1/u0VlIzBdbpzoN2eVgm48EpDo8LfkFVHa03aA==}
+    hasBin: true
+    dependencies:
+      commander: 9.4.1
+      execa: 5.1.1
+      kolorist: 1.6.0
+      minimist: 1.2.7
+      prompts: 2.4.2
     dev: true
 
   /@szmarczak/http-timer/5.0.1:
@@ -2101,18 +2112,6 @@ packages:
       - '@swc/wasm'
     dev: true
 
-  /commitlint/17.3.0:
-    resolution: {integrity: sha512-jKytr2eesn2HpRZrr/37O1AQkDsR4VTIVRoAe4oJF3Eg22jp8gaIMvC0/YDoLzNPQEH5VXNhP/uvco70ritGEA==}
-    engines: {node: '>=v14'}
-    hasBin: true
-    dependencies:
-      '@commitlint/cli': 17.3.0
-      '@commitlint/types': 17.0.0
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
-    dev: true
-
   /compare-func/2.0.0:
     resolution: {integrity: sha512-zHig5N+tPWARooBnb0Zx1MFcdfpyJrfTJ3Y5L+IFvUm8rM74hHz66z0gw0x4tijh5CorKkKUCnW82R2vmpeCRA==}
     dependencies:
@@ -2288,15 +2287,6 @@ packages:
       lodash: 4.17.21
       temp: 0.9.4
       word-wrap: 1.2.3
-    dev: true
-
-  /cz-git/1.4.0:
-    resolution: {integrity: sha512-3ZC3jA337Qp5FkoqBwIFG3o+R70oHl1iRpEd3dAjbUnU/rUA4YK2hy7A3PueSgcPh9HslPCcqXdeL+jWAbTrNw==}
-    dev: true
-
-  /czg/1.4.0:
-    resolution: {integrity: sha512-PgCCozvPZV+3X2f8Aq/eyGQqcUebwXWYAflVjTfPB2NesR53LHn9sPGRazFX29OLJiDcFYZdKgSyYJpvgWEcZQ==}
-    hasBin: true
     dev: true
 
   /dargs/7.0.0:
@@ -4554,7 +4544,6 @@ packages:
 
   /kolorist/1.6.0:
     resolution: {integrity: sha512-dLkz37Ab97HWMx9KTes3Tbi3D1ln9fCAy2zr2YVExJasDRPGRaKcoE4fycWNtnCAJfjFqe0cnY+f8KT2JePEXQ==}
-    dev: true
 
   /latest-version/7.0.0:
     resolution: {integrity: sha512-KvNT4XqAMzdcL6ka6Tl3i2lYeFDgXNCuIX+xNx6ZMVR1dFq+idXd9FLKNMOIx0t9mJ9/HudyX4oZWXZQ0UJHeg==}
@@ -5668,7 +5657,7 @@ packages:
       irregular-plurals: 2.0.0
     dev: true
 
-  /postcss-load-config/3.1.4_ts-node@10.9.1:
+  /postcss-load-config/3.1.4:
     resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
     engines: {node: '>= 10'}
     peerDependencies:
@@ -5681,7 +5670,6 @@ packages:
         optional: true
     dependencies:
       lilconfig: 2.0.6
-      ts-node: 10.9.1_bspv7bpieoza2i5ctiw2ofswem
       yaml: 1.10.2
     dev: true
 
@@ -6679,6 +6667,12 @@ packages:
   /signal-exit/3.0.7:
     resolution: {integrity: sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==}
 
+  /simple-git-hooks/2.8.1:
+    resolution: {integrity: sha512-DYpcVR1AGtSfFUNzlBdHrQGPsOhuuEJ/FkmPOOlFysP60AHd3nsEpkGq/QEOdtUyT1Qhk7w9oLmFoMG+75BDog==}
+    hasBin: true
+    requiresBuild: true
+    dev: true
+
   /sirv/2.0.2:
     resolution: {integrity: sha512-4Qog6aE29nIjAOKe/wowFTxOdmbEZKb+3tsLljaBRzJwtqto0BChD2zzH0LhgCSXiI+V7X+Y45v14wBZQ1TK3w==}
     engines: {node: '>= 10'}
@@ -7201,7 +7195,7 @@ packages:
     resolution: {integrity: sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==}
     dev: true
 
-  /tsup/6.5.0_z6wznmtyb6ovnulj6iujpct7um:
+  /tsup/6.5.0_typescript@4.9.4:
     resolution: {integrity: sha512-36u82r7rYqRHFkD15R20Cd4ercPkbYmuvRkz3Q1LCm5BsiFNUgpo36zbjVhCOgvjyxNBWNKHsaD5Rl8SykfzNA==}
     engines: {node: '>=14'}
     hasBin: true
@@ -7225,7 +7219,7 @@ packages:
       execa: 5.1.1
       globby: 11.1.0
       joycon: 3.1.1
-      postcss-load-config: 3.1.4_ts-node@10.9.1
+      postcss-load-config: 3.1.4
       resolve-from: 5.0.0
       rollup: 3.7.0
       source-map: 0.8.0-beta.0

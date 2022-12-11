@@ -1,20 +1,17 @@
 import type { Plugin } from 'vite';
-import { Context } from './context';
-import type { Options } from './types';
+import Context from './context';
+import type { PluginOption } from './types';
 
 /**
- * plugin
- * @description generate router page declaration
+ * A vite plugin for vue, auto generate route info by page
+ * @@param options plugin options
  */
-function routerPagePlugin(options?: Partial<Options>) {
+function pageRoute(options?: Partial<PluginOption>) {
   const context = new Context(options);
 
   const plugin: Plugin = {
-    name: 'router-page',
+    name: 'vite-plugin-vue-page-route',
     enforce: 'post',
-    configResolved(config) {
-      context.init(config.root);
-    },
     configureServer(server) {
       context.setupFileWatcher(server.watcher);
     }
@@ -23,6 +20,6 @@ function routerPagePlugin(options?: Partial<Options>) {
   return plugin;
 }
 
-export default routerPagePlugin;
+export default pageRoute;
 
-export type { Options };
+export type { PluginOption };

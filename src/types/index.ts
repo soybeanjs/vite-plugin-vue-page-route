@@ -1,80 +1,4 @@
-/**
- * plugin options 【插件配置】
- */
-export interface Options {
-  /**
-   * the directory of the pages.
-   * default: src/views.
-   * 【页面的目录，默认：src/views】
-   */
-  dir: string;
-  /**
-   * the directories will be excluded, which will not be scaned.
-   * default: [components].
-   * 【被排除的目录，该目录下不会被扫描，默认：[components]】
-   */
-  excludes: string[];
-  /**
-   * the declaration file path.
-   * default: src/typings/router-page.d.ts.
-   * 【生成的路由声明文件所在的路径，默认：src/typings/router-page.d.ts】
-   */
-  dts: string;
-  /**
-   * the route module directory, the route const will be genareted above this directory
-   * default: src/router/modules
-   * 【路由模块的文件夹，路由的定义会自动生成在该目录，默认：src/router/modules】
-   */
-  moduleDir: string;
-  /**
-   * the type declaretion of the generated route module item
-   * default: AuthRoute.Route
-   * 【生成的路由模块声明，默认：AuthRoute.Route】
-   */
-  moduleTypeConst: string;
-  /**
-   * the file name pattern as page
-   * default: [index.vue]
-   * 【作为页面的文件名称匹配规则】
-   */
-  patterns: string[];
-  /**
-   * the prefix of the ignore dir, which will not as the part of route name
-   * default: '_'
-   * 【需要忽略的目录前缀, 匹配到的目录不会作为路由名称的一部分】
-   * 默认: '_'
-   */
-  ignoreDirPrefix: string;
-  /**
-   * names of the buildtin routes, which are necessary
-   * 【系统内置的路由名称(必须存在的)】
-   * root: rootRoute '/' 【根路由】
-   * notFound: catch invalid route 【捕获无效的路由】
-   */
-  builtinRoute: { root: string; notFound: string };
-  /**
-   * the route's components imported directly, not lazy
-   * default is lazy import
-   * 【路由的组件不是懒加载的, 默认是懒加载】
-   */
-  noLazy: string[];
-  /**
-   * the page names formatter
-   * 【页面名称格式化函数】
-   */
-  pagesFormatter: (names: string[]) => string[];
-}
-
-export interface ContextOptions extends Options {
-  rootDir: string;
-}
-
-export interface NameWithModule {
-  key: string;
-  module: string;
-}
-
-type FilterPattern = ReadonlyArray<string | RegExp> | string | RegExp | null;
+export type FilterPattern = ReadonlyArray<string | RegExp> | string | RegExp | null;
 
 /**
  * plugin options
@@ -90,12 +14,17 @@ export interface PluginOption {
   pageDir: string;
   /**
    * the file name pattern as page
+   * - default: /index\.(vue|tsx|jsx)/
+   * @translate 作为页面的文件名称匹配规则
+   * - 默认: /index\.(vue|tsx|jsx)/
+   */
+  pageFilePattern: FilterPattern;
+  /**
+   * the glob pattern for page file
    * - default: ['index.{vue,tsx,jsx}']
    * @link https://github.com/mrmlnc/fast-glob
-   * @translate 作为页面的文件名称匹配规则
-   * - 默认: ['index.{vue,tsx,jsx}']
    */
-  pageFilePattern: string[];
+  globFilePattern: string[];
   /**
    * the directories will be excluded, which will not be scaned
    * - default: [components]
@@ -106,9 +35,9 @@ export interface PluginOption {
   /**
    * the ignore dir, which will not as the part of route name,
    * but the files will be scaned under this directory
-   * - default: /^_/
+   * - default: /^_.{0,}/
    * @translate 需要忽略的目录, 匹配到的目录不会作为路由名称的一部分
-   * - 默认: /^_/]
+   * - 默认: /^_.{0,}/
    */
   ignoreRouteDirs: FilterPattern;
   /**
@@ -144,9 +73,25 @@ export interface PluginOption {
    * ```
    * @param names the names of the route [路由的名称]
    * @property lazy is lazy import, default: all route file is lazy import
-   * @translate 路由文件导入的方式, 直接导入和懒加载导入
+   * @translate 路由文件导入的方式, 直接导入和懒加载导入, 默认全部都是懒加载导入
    */
   importHandler(names: string[]): { name: string; lazy: boolean }[];
+}
+
+export interface ContextOption extends Omit<PluginOption, 'pageFilePattern' | 'ignoreRouteDirs'> {
+  rootDir: string;
+  pageFilePattern: RegExp[];
+  ignoreRouteDirs: RegExp[];
+}
+
+/**
+ * the route name
+ */
+export interface RouteName {
+  /** all route names */
+  all: string[];
+  /** the last degree route names */
+  lastDegree: string[];
 }
 
 /**

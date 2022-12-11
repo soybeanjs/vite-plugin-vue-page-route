@@ -18,7 +18,7 @@
   "devDependencies": {
     "@commitlint/cli": "^17.3.0",
     "@commitlint/config-conventional": "^17.3.0",
-    "@soybeanjs/router-page": "workspace:*",
+    "@soybeanjs/vite-plugin-vue-page-route": "workspace:^0.0.1",
     "@types/node": "18.11.11",
     "@vitejs/plugin-vue": "^3.2.0",
     "@vitejs/plugin-vue-jsx": "^2.1.1",

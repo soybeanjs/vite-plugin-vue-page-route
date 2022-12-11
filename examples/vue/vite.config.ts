@@ -4,7 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import Components from 'unplugin-vue-components/vite';
 import unocss from 'unocss/vite';
-import routerPage from '@soybeanjs/router-page';
+import pageRoute from '@soybeanjs/vite-plugin-vue-page-route';
 import Inspect from 'vite-plugin-inspect';
 
 export default defineConfig(() => {
@@ -33,7 +33,7 @@ export default defineConfig(() => {
         types: [{ from: 'vue-router', names: ['RouterLink', 'RouterView'] }]
       }),
       unocss(),
-      routerPage({ noLazy: ['about', '404', 'home_second-page'] }),
+      pageRoute(),
       Inspect()
     ],
     server: {
