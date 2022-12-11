@@ -1,26 +1,25 @@
-# @soybeanjs/router-page
+# @soybeanjs/vite-plugin-page-route
 
-Vite 插件，自动根据页面文件生成页面的路由声明文件
+A vite plugin for vue, auto generate route info by page
+
+Vite 插件，自动根据页面文件生成页面的路由声明、生成页面组件导入、生成路由模块声明
 
 ## 用法
 
 ```ts
 import { defineConfig } from 'vite';
-import routerPage from '@soybeanjs/router-page';
+import pageRoute from '@soybeanjs/vite-plugin-page-route';
 
 export default defineConfig({
-  plugins: [routerPage({
-    dir: 'src/views', // 默认值
-    excludes: ['components'], // 默认值
-    dts: 'src/typings/router-page.d.ts', // 默认值
-    patterns: ['index.vue'], // 默认值
-    ignoreDirPrefix: '_',
-    builtinRoute: { // 默认值
-      root: 'root',
-      notFound: 'not-found'
-    },
-    notLazyRoutes: [], // 默认值
-    pagesFormatter: names => names // 默认
+  plugins: [pageRoute({
+    pageDir: 'src/views', // default
+    pageFilePattern: /index\.(vue|tsx|jsx)/, // default
+    globFilePattern: ['index.{vue,tsx,jsx}'], // default
+    excludeDirs: ['components'], // default
+    ignoreRouteDirs: /^_.*/, // default
+    routeModuleDir: 'src/typings/page-route.d.ts', // default
+    routeModuleDeclaration: 'AuthRoute.Route', // default
+    importHandler: names => names.map(name => ({ name, lazy: true })) // default
   })]
 });
 ```
