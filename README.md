@@ -1,4 +1,4 @@
-# @soybeanjs/vite-plugin-page-route
+# @soybeanjs/vite-plugin-vue-page-route
 
 A vite plugin for vue, auto generate route info by page
 
@@ -8,7 +8,7 @@ Vite 插件，自动根据页面文件生成页面的路由声明、生成页面
 
 ```ts
 import { defineConfig } from 'vite';
-import pageRoute from '@soybeanjs/vite-plugin-page-route';
+import pageRoute from '@soybeanjs/vite-plugin-vue-page-route';
 
 export default defineConfig({
   plugins: [pageRoute({

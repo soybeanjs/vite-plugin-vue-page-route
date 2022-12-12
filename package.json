@@ -43,7 +43,7 @@
     "publish-pkg": "pnpm -r publish --access public",
     "release": "pnpm update-version && pnpm publish-pkg",
     "sync-pkg": "esno ./scripts/sync.ts",
-    "prepare": "pnpm -r run stub && husky install"
+    "prepare": "pnpm -r run stub"
   },
   "dependencies": {
     "execa": "5.1.1",
