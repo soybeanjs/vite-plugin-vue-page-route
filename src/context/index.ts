@@ -11,7 +11,7 @@ import {
 } from '../shared';
 import { generateRouteDeclaraton } from './route-declaration';
 import { generateRouteViews } from './route-views';
-import { handleRouteModuleFromGlob } from './route-module';
+import { generateRouteModule } from './route-module';
 import type { RouteImport, ContextOption, PluginOption, RouteName } from '../types';
 
 export default class Context {
@@ -20,6 +20,12 @@ export default class Context {
   routeName: RouteName;
 
   routeImports: RouteImport[];
+
+  dispatchId: null | NodeJS.Timeout = null;
+
+  dispatchAddGlobs: string[] = [];
+
+  dispatchUnlinkGlobs: string[] = [];
 
   constructor(options: Partial<PluginOption> = {}) {
     const rootDir = process.cwd();
@@ -38,33 +44,61 @@ export default class Context {
     return globs;
   }
 
-  private generate() {
-    generateRouteDeclaraton(this.routeName, this.options);
-    generateRouteViews(this.routeImports, this.options);
+  private async generate() {
+    await generateRouteDeclaraton(this.routeName, this.options);
+    await generateRouteViews(this.routeImports, this.options);
   }
 
-  private fileHandler(glob: string, type: 'add' | 'unlink') {
-    if (!checkMatchGlobPath(glob, this.options)) return;
+  private dispatchFileWatcher(glob: string, type: 'add' | 'unlink') {
+    if (type === 'add') {
+      this.dispatchAddGlobs.push(glob);
+    } else {
+      this.dispatchUnlinkGlobs.push(glob);
+    }
+    if (!this.dispatchId) {
+      this.dispatchId = setTimeout(async () => {
+        await this.update(this.dispatchUnlinkGlobs, 'unlink');
+        this.dispatchUnlinkGlobs = [];
 
-    this.routeName = handleUpdateRouteName({ glob, routeName: this.routeName, options: this.options, type });
+        await this.update(this.dispatchAddGlobs, 'add');
+        this.dispatchAddGlobs = [];
+
+        this.dispatchId = null;
+      }, 100);
+    }
+  }
+
+  private async update(globs: string[], type: 'add' | 'unlink') {
+    const lastDegree = [...this.routeName.lastDegree];
+
+    const validGlobs = globs.filter(glob => checkMatchGlobPath(glob, this.options));
+
+    if (!validGlobs.length) return;
+
+    this.routeName = handleUpdateRouteName({
+      globs: validGlobs,
+      routeName: this.routeName,
+      options: this.options,
+      type
+    });
     this.routeImports = handleUpdateRouteViewImport({
-      glob,
+      globs,
       routeImports: this.routeImports,
       options: this.options,
       type
     });
 
-    this.generate();
+    await this.generate();
 
-    handleRouteModuleFromGlob(glob, type, this.options);
+    await generateRouteModule({ globs, type, options: this.options, lastDegree });
   }
 
   setupFileWatcher(watcher: FSWatcher) {
     watcher.on('add', stream => {
-      this.fileHandler(stream, 'add');
+      this.dispatchFileWatcher(stream, 'add');
     });
     watcher.on('unlink', stream => {
-      this.fileHandler(stream, 'unlink');
+      this.dispatchFileWatcher(stream, 'unlink');
     });
   }
 }

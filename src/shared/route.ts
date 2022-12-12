@@ -79,24 +79,20 @@ export function getRouteNamesFromGlobs(globs: string[], options: ContextOption):
   };
 }
 
-function handleAddRouteName(glob: string, routeName: RouteName, options: ContextOption): RouteName {
-  const name = getRouteNameFromGlob(glob, options);
-
-  const parentNames = getAllRouteNames(name);
+function handleAddRouteName(globs: string[], routeName: RouteName, options: ContextOption): RouteName {
+  const { all, lastDegree } = getRouteNamesFromGlobs(globs, options);
 
   return {
-    all: uniqueStrArray(routeName.all, parentNames),
-    lastDegree: uniqueStrArray(routeName.lastDegree, [name])
+    all: uniqueStrArray(routeName.all, all),
+    lastDegree: uniqueStrArray(routeName.lastDegree, lastDegree)
   };
 }
 
-function handleDeleteRouteName(glob: string, routeName: RouteName, options: ContextOption): RouteName {
-  const name = getRouteNameFromGlob(glob, options);
+function handleDeleteRouteName(globs: string[], routeName: RouteName, options: ContextOption): RouteName {
+  const deleteRouteName = getRouteNamesFromGlobs(globs, options);
 
-  const parentNames = getAllRouteNames(name);
-
-  const lastDegree = routeName.lastDegree.filter(item => item !== name);
-  const all = routeName.all.filter(item => !parentNames.includes(item));
+  const lastDegree = routeName.lastDegree.filter(item => !deleteRouteName.lastDegree.includes(item));
+  const all = routeName.all.filter(item => !deleteRouteName.all.includes(item));
 
   return {
     all,
@@ -105,17 +101,17 @@ function handleDeleteRouteName(glob: string, routeName: RouteName, options: Cont
 }
 
 export function handleUpdateRouteName(params: {
-  glob: string;
+  globs: string[];
   routeName: RouteName;
   options: ContextOption;
   type: 'add' | 'unlink';
 }): RouteName {
-  const { glob, routeName, options, type } = params;
+  const { globs, routeName, options, type } = params;
   if (type === 'add') {
-    return handleAddRouteName(glob, routeName, options);
+    return handleAddRouteName(globs, routeName, options);
   }
 
-  return handleDeleteRouteName(glob, routeName, options);
+  return handleDeleteRouteName(globs, routeName, options);
 }
 
 function getRouteViewImportFromGlob(glob: string, options: ContextOption) {
@@ -141,40 +137,35 @@ export function getRouteViewImportsFromGlobs(globs: string[], options: ContextOp
   return imports;
 }
 
-function handleAddRouteViewImport(glob: string, routeImports: RouteImport[], options: ContextOption) {
-  const name = getRouteNameFromGlob(glob, options);
+function handleAddRouteViewImport(globs: string[], routeImports: RouteImport[], options: ContextOption) {
+  const addViewImports = getRouteViewImportsFromGlobs(globs, options);
 
-  const path = getRouteViewImportFromGlob(glob, options);
+  let result = routeImports.filter(item => !addViewImports.find(v => v.name === item.name));
 
-  const result = [...routeImports];
-
-  const findItem = routeImports.find(item => item.name === name);
-  if (!findItem) {
-    result.push({ name, path });
-  }
+  result = result.concat(addViewImports);
 
   result.sort((pre, current) => (pre.name > current.name ? 1 : -1));
 
   return result;
 }
 
-function handleDeleteRouteViewImport(glob: string, routeImports: RouteImport[], options: ContextOption) {
-  const name = getRouteNameFromGlob(glob, options);
-  return routeImports.filter(item => item.name !== name);
+function handleDeleteRouteViewImport(globs: string[], routeImports: RouteImport[], options: ContextOption) {
+  const deleteViewImports = getRouteViewImportsFromGlobs(globs, options);
+  return routeImports.filter(item => !deleteViewImports.find(v => v.name === item.name));
 }
 
 export function handleUpdateRouteViewImport(params: {
-  glob: string;
+  globs: string[];
   routeImports: RouteImport[];
   options: ContextOption;
   type: 'add' | 'unlink';
 }) {
-  const { glob, routeImports, options, type } = params;
+  const { globs, routeImports, options, type } = params;
 
   if (type === 'add') {
-    return handleAddRouteViewImport(glob, routeImports, options);
+    return handleAddRouteViewImport(globs, routeImports, options);
   }
-  return handleDeleteRouteViewImport(glob, routeImports, options);
+  return handleDeleteRouteViewImport(globs, routeImports, options);
 }
 
 interface RouteConfig {

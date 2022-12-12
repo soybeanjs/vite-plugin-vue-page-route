@@ -6,6 +6,7 @@ importers:
     specifiers:
       '@soybeanjs/cli': ^0.1.4
       '@types/node': ^18.11.11
+      '@types/throttle-debounce': ^5.0.0
       bumpp: ^8.2.1
       eslint: ^8.29.0
       eslint-config-soybeanjs: ^0.2.1
@@ -30,6 +31,7 @@ importers:
     devDependencies:
       '@soybeanjs/cli': 0.1.4
       '@types/node': 18.11.11
+      '@types/throttle-debounce': 5.0.0
       bumpp: 8.2.1
       eslint: 8.29.0
       eslint-config-soybeanjs: 0.2.1_ha6vam6werchizxrnqvarmz2zu
@@ -951,6 +953,10 @@ packages:
 
   /@types/semver/7.3.13:
     resolution: {integrity: sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==}
+    dev: true
+
+  /@types/throttle-debounce/5.0.0:
+    resolution: {integrity: sha512-Pb7k35iCGFcGPECoNE4DYp3Oyf2xcTd3FbFQxXUI9hEYKUl6YX+KLf7HrBmgVcD05nl50LIH6i+80js4iYmWbw==}
     dev: true
 
   /@types/unist/2.0.6:

@@ -54,6 +54,7 @@
   "devDependencies": {
     "@soybeanjs/cli": "^0.1.4",
     "@types/node": "^18.11.11",
+    "@types/throttle-debounce": "^5.0.0",
     "bumpp": "^8.2.1",
     "eslint": "^8.29.0",
     "eslint-config-soybeanjs": "^0.2.1",
