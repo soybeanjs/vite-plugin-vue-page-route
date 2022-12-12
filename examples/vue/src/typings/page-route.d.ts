@@ -20,9 +20,16 @@ declare namespace PageRoute {
     | 'login'
     | 'about'
     | 'demo'
+    | 'home'
     | 'home_fifth'
     | 'home_first-page'
     | 'home_four'
+    | 'home_multi'
+    | 'home_multi_first'
+    | 'home_multi_second'
+    | 'home_multi_third1'
+    | 'home_multi_third1_third-child1'
+    | 'home_multi_third1_third-child2'
     | 'home_second-page'
     | 'home_third'
     | 'one'
@@ -30,11 +37,7 @@ declare namespace PageRoute {
     | 'one_two_three-1'
     | 'one_two_three-ano'
     | 'one_two_three'
-    | 'test'
-    | 'home'
-    | 'home_multi'
-    | 'home_multi_second'
-    | 'home_multi_first';
+    | 'test';
 
   /**
    * last degree route key, which has the page file
@@ -49,13 +52,15 @@ declare namespace PageRoute {
     | 'home_fifth'
     | 'home_first-page'
     | 'home_four'
+    | 'home_multi_first'
+    | 'home_multi_second'
+    | 'home_multi_third1_third-child1'
+    | 'home_multi_third1_third-child2'
     | 'home_second-page'
     | 'home_third'
     | 'one_two_three-1'
     | 'one_two_three-ano'
     | 'one_two_three'
     | 'test'
-    | 'home_multi_second'
-    | 'home_multi_first'
   >;
 }

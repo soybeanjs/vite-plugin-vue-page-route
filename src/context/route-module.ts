@@ -80,6 +80,10 @@ function isDeleteWholeModule(deletes: string[], lastDegree: string[], moduleName
   return remains.every(item => !item.includes(moduleName));
 }
 
+function getDeleteModuleNames(deletes: string[], lastDegree: string[]) {
+  const splitDeletes = deletes.map(item => item.split(PAGE_DEGREE_SPLIT_MARK)).sort((a, b) => b.length - a.length);
+}
+
 async function updateRouteModuleWhenFileUnlinked(globs: string[], options: ContextOption, lastDegree: string[]) {
   const moduleName = getRouteModuleNameFromGlob(globs[0], options);
   const exist = await getIsRouteModuleFileExist(moduleName, options);

@@ -5,6 +5,7 @@ export const views: Record<
   RouteComponent | (() => Promise<{ default: RouteComponent }>)
 > = {
   404: () => import('./_builtin/404/index.vue'),
+  login: () => import('./_builtin/login/index.vue'),
   about: () => import('./about/index.vue'),
   demo: () => import('./demo/index.vue'),
   home_fifth: () => import('./home/fifth/index.vue'),
@@ -12,11 +13,12 @@ export const views: Record<
   home_four: () => import('./home/four/index.vue'),
   home_multi_first: () => import('./home/multi/first/index.vue'),
   home_multi_second: () => import('./home/multi/second/index.vue'),
+  'home_multi_third1_third-child1': () => import('./home/multi/third1/third-child1/index.vue'),
+  'home_multi_third1_third-child2': () => import('./home/multi/third1/third-child2/index.vue'),
   'home_second-page': () => import('./home/second-page/index.vue'),
   home_third: () => import('./home/third/index.vue'),
-  login: () => import('./_builtin/login/index.vue'),
-  one_two_three: () => import('./one/two/three/index.vue'),
   'one_two_three-1': () => import('./one/two/three-1/index.vue'),
   'one_two_three-ano': () => import('./one/two/three-ano/index.vue'),
+  one_two_three: () => import('./one/two/three/index.vue'),
   test: () => import('./test/index.vue')
 };

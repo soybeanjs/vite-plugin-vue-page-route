@@ -12,8 +12,8 @@ function pageRoute(options?: Partial<PluginOption>) {
   const plugin: Plugin = {
     name: 'vite-plugin-vue-page-route',
     enforce: 'post',
-    configureServer(server) {
-      context.setupFileWatcher(server.watcher);
+    configureServer() {
+      context.setupChokidar();
     }
   };
 

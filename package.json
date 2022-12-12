@@ -46,6 +46,7 @@
     "prepare": "pnpm -r run stub"
   },
   "dependencies": {
+    "chokidar": "^3.5.3",
     "execa": "5.1.1",
     "fast-glob": "^3.2.12",
     "kolorist": "^1.6.0",

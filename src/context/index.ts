@@ -1,6 +1,8 @@
 import type { FSWatcher } from 'fs';
+import chokidar from 'chokidar';
 import {
   createPluginOptions,
+  getRelativePathFromRoot,
   getScanPathsOfPageFile,
   getGlobsOfPageFile,
   getRouteNamesFromGlobs,
@@ -99,6 +101,22 @@ export default class Context {
     });
     watcher.on('unlink', stream => {
       this.dispatchFileWatcher(stream, 'unlink');
+    });
+  }
+
+  setupChokidar() {
+    const pageDir = getRelativePathFromRoot(this.options.pageDir);
+    chokidar.watch(pageDir, { ignoreInitial: true }).on('addDir', path => {
+      console.log('addDir path: ', path);
+    });
+    chokidar.watch(pageDir, { ignoreInitial: true }).on('unlinkDir', path => {
+      console.log('unlinkDir path: ', path);
+    });
+    chokidar.watch(pageDir, { ignoreInitial: true }).on('add', path => {
+      console.log('add path: ', path);
+    });
+    chokidar.watch(pageDir, { ignoreInitial: true }).on('unlink', path => {
+      console.log('unlink path: ', path);
     });
   }
 }
