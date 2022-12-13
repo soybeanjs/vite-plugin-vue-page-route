@@ -131,3 +131,10 @@ export interface RouteModule {
   };
   children?: RouteModule[];
 }
+
+export type FileWatcherEvent = 'addDir' | 'unlinkDir' | 'add' | 'unlink';
+
+export interface FileWatcherDispatch {
+  event: FileWatcherEvent;
+  path: string;
+}

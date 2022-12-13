@@ -4,7 +4,7 @@ import type { PluginOption } from './types';
 
 /**
  * A vite plugin for vue, auto generate route info by page
- * @@param options plugin options
+ * @param options plugin options
  */
 function pageRoute(options?: Partial<PluginOption>) {
   const context = new Context(options);
@@ -13,7 +13,7 @@ function pageRoute(options?: Partial<PluginOption>) {
     name: 'vite-plugin-vue-page-route',
     enforce: 'post',
     configureServer() {
-      context.setupChokidar();
+      context.setupFileWatcher();
     }
   };
 

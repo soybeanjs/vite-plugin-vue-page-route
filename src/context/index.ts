@@ -1,4 +1,3 @@
-import type { FSWatcher } from 'fs';
 import chokidar from 'chokidar';
 import {
   createPluginOptions,
@@ -14,7 +13,15 @@ import {
 import { generateRouteDeclaraton } from './route-declaration';
 import { generateRouteViews } from './route-views';
 import { generateRouteModule } from './route-module';
-import type { RouteImport, ContextOption, PluginOption, RouteName } from '../types';
+import { fileWatcherHandler } from './file-watcher';
+import type {
+  RouteImport,
+  ContextOption,
+  PluginOption,
+  RouteName,
+  FileWatcherEvent,
+  FileWatcherDispatch
+} from '../types';
 
 export default class Context {
   options: ContextOption;
@@ -24,6 +31,8 @@ export default class Context {
   routeImports: RouteImport[];
 
   dispatchId: null | NodeJS.Timeout = null;
+
+  dispatchStack: FileWatcherDispatch[] = [];
 
   dispatchAddGlobs: string[] = [];
 
@@ -51,7 +60,7 @@ export default class Context {
     await generateRouteViews(this.routeImports, this.options);
   }
 
-  private dispatchFileWatcher(glob: string, type: 'add' | 'unlink') {
+  private dispatchFileWatcher1(glob: string, type: 'add' | 'unlink') {
     if (type === 'add') {
       this.dispatchAddGlobs.push(glob);
     } else {
@@ -95,28 +104,48 @@ export default class Context {
     await generateRouteModule({ globs, type, options: this.options, lastDegree });
   }
 
-  setupFileWatcher(watcher: FSWatcher) {
-    watcher.on('add', stream => {
-      this.dispatchFileWatcher(stream, 'add');
-    });
-    watcher.on('unlink', stream => {
-      this.dispatchFileWatcher(stream, 'unlink');
-    });
+  private dispatchFileWatcher(glob: string, event: FileWatcherEvent) {
+    this.dispatchStack.push({ event, path: glob });
+    if (!this.dispatchId) {
+      this.dispatchId = setTimeout(async () => {
+        console.log('this.dispatchStack: ', this.dispatchStack);
+        await fileWatcherHandler(this.dispatchStack, {
+          async onRenameDirectoryWithFile() {
+            console.log('onRenameDirectoryWithFile: ');
+          },
+          async onDeleteDirectoryWithFile() {
+            console.log('onDeleteDirectoryWithFile: ');
+          },
+          async onAddDirectoryWithFile() {
+            console.log('onAddDirectoryWithFile: ');
+          },
+          async onDeleteFile() {
+            console.log('onDeleteFile: ');
+          },
+          async onAddFile() {
+            console.log('onAddFile: ');
+          }
+        });
+
+        this.dispatchStack = [];
+        this.dispatchId = null;
+      }, 200);
+    }
   }
 
-  setupChokidar() {
+  setupFileWatcher() {
     const pageDir = getRelativePathFromRoot(this.options.pageDir);
-    chokidar.watch(pageDir, { ignoreInitial: true }).on('addDir', path => {
-      console.log('addDir path: ', path);
-    });
-    chokidar.watch(pageDir, { ignoreInitial: true }).on('unlinkDir', path => {
-      console.log('unlinkDir path: ', path);
-    });
-    chokidar.watch(pageDir, { ignoreInitial: true }).on('add', path => {
-      console.log('add path: ', path);
-    });
-    chokidar.watch(pageDir, { ignoreInitial: true }).on('unlink', path => {
-      console.log('unlink path: ', path);
+
+    const events: FileWatcherEvent[] = ['addDir', 'unlinkDir', 'add', 'unlink'];
+
+    events.forEach(event => {
+      chokidar
+        .watch(pageDir, {
+          ignoreInitial: true
+        })
+        .on(event, path => {
+          this.dispatchFileWatcher(path, event);
+        });
     });
   }
 }
