@@ -1,44 +1,24 @@
-import {
-  PAGE_DIR,
-  PAGE_FILE_PATTERN,
-  GLOB_FILE_PATTERN,
-  EXCLUDE_DIRS,
-  IGNORE_ROUTE_DIRS,
-  ROUTE_DTS,
-  ROUTE_MODULE_DIR,
-  ROUTE_MODULE_DECLARATION
-} from './constant';
-import type { PluginOption, ContextOption, FilterPattern } from '../types';
-
-function getPatterns(pattern?: FilterPattern) {
-  if (!pattern) return null;
-
-  const patterns: (RegExp | string)[] = Array.isArray(pattern) ? pattern : [pattern];
-
-  return patterns.map(item => {
-    if (typeof item === 'string') {
-      return new RegExp(item);
-    }
-    return item;
-  });
-}
+import { makeRe } from 'micromatch';
+import { PAGE_DIR, PAGE_GLOB, ROUTE_DTS, ROUTE_MODULE_DIR, ROUTE_MODULE_TYPE } from './constant';
+import type { PluginOption, ContextOption } from '../types';
 
 /**
  * create plugin options
  * @param options user custom options for plugin
  */
 export function createPluginOptions(userOptions: Partial<PluginOption>, rootDir: string) {
+  const IGNORE_UNDERLINE_REG = /^_([a-zA-Z]|$)+_*/;
+
   const options: ContextOption = {
     pageDir: PAGE_DIR,
-    pageFilePattern: getPatterns(userOptions.pageFilePattern) || [PAGE_FILE_PATTERN],
-    globFilePattern: GLOB_FILE_PATTERN,
-    excludeDirs: EXCLUDE_DIRS,
-    ignoreRouteDirs: getPatterns(userOptions.ignoreRouteDirs) || [IGNORE_ROUTE_DIRS],
+    pageGlob: PAGE_GLOB,
     routeDts: ROUTE_DTS,
     routeModuleDir: ROUTE_MODULE_DIR,
-    routeModuleDeclaration: ROUTE_MODULE_DECLARATION,
+    routeModuleType: ROUTE_MODULE_TYPE,
     importHandler: names => names.map(name => ({ name, lazy: true })),
-    rootDir
+    routeNameTansformer: name => name.replace(IGNORE_UNDERLINE_REG, ''),
+    rootDir,
+    pagePattern: PAGE_GLOB.map(glob => makeRe(glob))
   };
 
   Object.assign<ContextOption, Partial<PluginOption>>(options, userOptions);

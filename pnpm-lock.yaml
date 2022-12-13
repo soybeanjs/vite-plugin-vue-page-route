@@ -5,6 +5,7 @@ importers:
   .:
     specifiers:
       '@soybeanjs/cli': ^0.1.4
+      '@types/micromatch': ^4.0.2
       '@types/node': ^18.11.11
       '@types/throttle-debounce': ^5.0.0
       bumpp: ^8.2.1
@@ -17,6 +18,7 @@ importers:
       kolorist: ^1.6.0
       lint-staged: ^13.1.0
       magic-string: ^0.27.0
+      micromatch: ^4.0.5
       npm-check-updates: ^16.5.1
       rimraf: ^3.0.2
       simple-git-hooks: ^2.8.1
@@ -30,8 +32,10 @@ importers:
       fast-glob: 3.2.12
       kolorist: 1.6.0
       magic-string: 0.27.0
+      micromatch: 4.0.5
     devDependencies:
       '@soybeanjs/cli': 0.1.4
+      '@types/micromatch': 4.0.2
       '@types/node': 18.11.11
       '@types/throttle-debounce': 5.0.0
       bumpp: 8.2.1
@@ -907,6 +911,10 @@ packages:
     resolution: {integrity: sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==}
     dev: true
 
+  /@types/braces/3.0.1:
+    resolution: {integrity: sha512-+euflG6ygo4bn0JHtn4pYqcXwRtLvElQ7/nnjDu7iYG56H0+OhCd7d6Ug0IE3WcFpZozBKW2+80FUbv5QGk5AQ==}
+    dev: true
+
   /@types/estree/1.0.0:
     resolution: {integrity: sha512-WulqXMDUTYAXCjZnk6JtIHPigp55cVtDgDrO2gHRwhyJto21+1zbVCtOYB2L1F9w4qCQ0rOGWBnBe0FNTiEJIQ==}
     dev: true
@@ -927,6 +935,12 @@ packages:
 
   /@types/json5/0.0.29:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
+    dev: true
+
+  /@types/micromatch/4.0.2:
+    resolution: {integrity: sha512-oqXqVb0ci19GtH0vOA/U2TmHTcRY9kuZl4mqUxe0QmJAlIW13kzhuK5pi1i9+ngav8FjpSb9FVS/GE00GLX1VA==}
+    dependencies:
+      '@types/braces': 3.0.1
     dev: true
 
   /@types/minimist/1.2.2:

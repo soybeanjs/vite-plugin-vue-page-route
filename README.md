@@ -1,8 +1,8 @@
 # @soybeanjs/vite-plugin-vue-page-route
 
-A vite plugin for vue, auto generate route info by page
+中文 | [English](./README.en_US.md)
 
-Vite 插件，自动根据页面文件生成页面的路由声明、生成页面组件导入、生成路由模块声明
+Vite 插件，根据页面文件自动生成路由声明、路由组件的导入、路由模块的定义。
 
 ## 用法
 
@@ -12,14 +12,16 @@ import pageRoute from '@soybeanjs/vite-plugin-vue-page-route';
 
 export default defineConfig({
   plugins: [pageRoute({
-    pageDir: 'src/views', // default
-    pageFilePattern: /index\.(vue|tsx|jsx)/, // default
-    globFilePattern: ['index.{vue,tsx,jsx}'], // default
-    excludeDirs: ['components'], // default
-    ignoreRouteDirs: /^_.*/, // default
-    routeModuleDir: 'src/typings/page-route.d.ts', // default
-    routeModuleDeclaration: 'AuthRoute.Route', // default
-    importHandler: names => names.map(name => ({ name, lazy: true })) // default
+    pageDir: 'src/views', // 默认
+    pageGlob: ['**/index.{vue,tsx,jsx}', '!**/components*'], // 默认
+    routeDts: 'src/typings/page-route.d.ts', // 默认
+    routeModuleDir: 'src/router/modules', // 默认
+    routeModuleType: 'AuthRoute.Route', // 默认
+    /**
+     * @example _builtin_login => login
+     */
+    routeNameTansformer: name => name.replace(/^_([a-zA-Z]|$)+_*/, ''), // 默认
+    importHandler: names => names.map(name => ({ name, lazy: true })) // 默认
   })]
 });
 ```

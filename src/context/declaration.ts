@@ -1,8 +1,8 @@
 import { writeFile } from 'fs/promises';
-import { getRelativePathFromRoot, ROOT_ROUTE, NOT_FOUND_ROUTE } from '../shared';
-import type { ContextOption, RouteName } from '../types';
+import { ROOT_ROUTE, NOT_FOUND_ROUTE } from '../shared';
+import type { ContextOption, RouteConfig } from '../types';
 
-function getDeclaratonCode(routeName: RouteName) {
+function getDeclarationCode(routeConfig: RouteConfig) {
   let code = `declare namespace PageRoute {
   /**
    * the root route key
@@ -22,7 +22,7 @@ function getDeclaratonCode(routeName: RouteName) {
    */
   type RouteKey =`;
 
-  routeName.all.forEach(name => {
+  routeConfig.names.forEach(name => {
     code += `\n    | '${name}'`;
   });
 
@@ -34,8 +34,9 @@ function getDeclaratonCode(routeName: RouteName) {
    */
   type LastDegreeRouteKey = Extract<
     RouteKey,`;
-  routeName.lastDegree.forEach(name => {
-    code += `\n    | '${name}'`;
+
+  routeConfig.files.forEach(item => {
+    code += `\n    | '${item.name}'`;
   });
 
   code += `
@@ -44,12 +45,10 @@ function getDeclaratonCode(routeName: RouteName) {
   return code;
 }
 
-export async function generateRouteDeclaraton(routeName: RouteName, options: ContextOption) {
-  const code = getDeclaratonCode(routeName);
+export async function generateDeclaration(routeConfig: RouteConfig, options: ContextOption) {
+  const code = getDeclarationCode(routeConfig);
 
-  const dtsPath = getRelativePathFromRoot(options.routeDts);
-
-  const filePath = `${options.rootDir}/${dtsPath}`;
+  const filePath = `${options.rootDir}/${options.routeDts}`;
 
   await writeFile(filePath, code, 'utf-8');
 }

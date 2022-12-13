@@ -1,6 +1,5 @@
 import { writeFile } from 'fs/promises';
-import { getRelativePathFromRoot } from '../shared';
-import type { RouteImport, ContextOption } from '../types';
+import type { ContextOption, RouteFile } from '../types';
 
 function transformKey(key: string) {
   return key.includes('-') ? `'${key}'` : key;
@@ -17,8 +16,8 @@ function transformImportKey(key: string) {
   return result;
 }
 
-function getRouteViewsCode(routeImports: RouteImport[], options: ContextOption) {
-  const lazyImports = options.importHandler(routeImports.map(item => item.name));
+function getViewsCode(routeFiles: RouteFile[], options: ContextOption) {
+  const lazyImports = options.importHandler(routeFiles.map(item => item.name));
   const checkIsLazy = (name: string) => Boolean(lazyImports.find(item => item.name === name)?.lazy);
 
   let preCode = `import type { RouteComponent } from 'vue-router';\n`;
@@ -28,7 +27,7 @@ export const views: Record<
   RouteComponent | (() => Promise<{ default: RouteComponent }>)
 > = {`;
 
-  routeImports.forEach(({ name, path }, index) => {
+  routeFiles.forEach(({ name, path }, index) => {
     const isLazy = checkIsLazy(name);
 
     const key = transformKey(name);
@@ -47,7 +46,7 @@ export const views: Record<
       }
     }
 
-    if (index < routeImports.length - 1) {
+    if (index < routeFiles.length - 1) {
       code += ',';
     }
   });
@@ -57,12 +56,10 @@ export const views: Record<
   return preCode + code;
 }
 
-export async function generateRouteViews(routeImports: RouteImport[], options: ContextOption) {
-  const code = getRouteViewsCode(routeImports, options);
+export async function generateViews(routeFiles: RouteFile[], options: ContextOption) {
+  const code = getViewsCode(routeFiles, options);
 
-  const pageDir = getRelativePathFromRoot(options.pageDir);
-
-  const filePath = `${options.rootDir}/${pageDir}/index.ts`;
+  const filePath = `${options.rootDir}/${options.pageDir}/index.ts`;
 
   await writeFile(filePath, code, 'utf-8');
 }

@@ -1,46 +1,45 @@
 import { access } from 'fs/promises';
-import { getRelativePathFromRoot, createInvalidNameError, createRecommendName } from './path';
-import { PAGE_DEGREE_SPLIT_MARK, ROUTE_NAME_REG, INVALID_ROUTE_NAME, CAMEL_OR_PASCAL } from './constant';
-import type { ContextOption, RouteName, RouteImport, RouteModule, RouteComponentType } from '../types';
+import { red, bgRed, green, bgYellow, yellow } from 'kolorist';
+import { SPLASH_MARK, PAGE_DEGREE_SPLIT_MARK, ROUTE_NAME_REG, INVALID_ROUTE_NAME, CAMEL_OR_PASCAL } from './constant';
+import { getBlobRelativePathFromRoot } from './path';
+import type { ContextOption, RouteConfig, RouteModule, RouteComponentType } from '../types';
 
-export function getRouteNameFromGlob(glob: string, options: ContextOption) {
-  const { rootDir, pageFilePattern, ignoreRouteDirs } = options;
+function transformRouteName(glob: string, routeName: string, pageDir: string) {
+  let name = routeName;
 
-  const pageDir = getRelativePathFromRoot(options.pageDir);
-
-  const prefix = `${rootDir}/${pageDir}/`;
-
-  const filePath = glob.replace(prefix, '');
-
-  let routeName = filePath;
-
-  pageFilePattern.forEach(pattern => {
-    routeName = routeName.replace(pattern, '');
-
-    routeName = routeName
-      .split('/')
-      .filter(item => {
-        let name = item;
-        if (name) {
-          ignoreRouteDirs.forEach(p => {
-            name = name.replace(p, '');
-          });
-        }
-        return Boolean(name);
-      })
-      .join(PAGE_DEGREE_SPLIT_MARK);
-  });
-
-  if (!ROUTE_NAME_REG.test(routeName)) {
-    routeName = INVALID_ROUTE_NAME;
-    createInvalidNameError(filePath, routeName);
-  }
+  const filePath = getBlobRelativePathFromRoot(glob, pageDir);
 
   if (CAMEL_OR_PASCAL.test(routeName)) {
-    createRecommendName(filePath);
+    let warning = `${bgYellow('RECOMMEND')} `;
+    warning += yellow(`the filePath: ${filePath}`);
+    warning += green(`\n it's recommended to use kebab-case name style`);
+    warning += green(`\n example: good: user-info bad: userInfo, UserInfo`);
+    // eslint-disable-next-line no-console
+    console.info(warning);
   }
 
-  return routeName;
+  if (!ROUTE_NAME_REG.test(name)) {
+    name = INVALID_ROUTE_NAME;
+
+    let error = `${bgRed('ERROR')} `;
+    error += red(`the path is invalid: ${filePath} !\n`);
+    error += red(`routeName: ${routeName} !`);
+    error += green(
+      `\n the directory name and file name can only include letter[a-zA-Z], number[0-9], underline[_] and dollar[$]`
+    );
+    // eslint-disable-next-line no-console
+    console.error(error);
+  }
+
+  return name;
+}
+
+function getRouteNameByGlob(glob: string, pageDir: string) {
+  const globSplits = glob.split(SPLASH_MARK);
+
+  const routeName = globSplits.splice(0, globSplits.length - 1).join(PAGE_DEGREE_SPLIT_MARK);
+
+  return transformRouteName(glob, routeName, pageDir);
 }
 
 function getAllRouteNames(routeName: string) {
@@ -56,124 +55,43 @@ function getAllRouteNames(routeName: string) {
   return namesWithParent;
 }
 
-function uniqueStrArray(...arr: string[][]) {
-  const result: string[] = [];
-  arr.forEach(item => {
-    result.push(...item);
+function getRouteFilePathByGlob(glob: string) {
+  return `./${glob}`;
+}
+
+export function getRouteConfigByGlobs(globs: string[], options: ContextOption) {
+  const config: RouteConfig = {
+    names: [],
+    files: []
+  };
+
+  globs.sort().forEach(glob => {
+    const routeName = getRouteNameByGlob(glob, options.pageDir);
+
+    const names = getAllRouteNames(routeName);
+    config.names.push(...names);
+
+    const filePath = getRouteFilePathByGlob(glob);
+    config.files.push({ name: routeName, path: filePath });
   });
-  return [...new Set(result)];
-}
 
-export function getRouteNamesFromGlobs(globs: string[], options: ContextOption): RouteName {
-  const lastDegree = globs.map(glob => getRouteNameFromGlob(glob, options));
+  config.names = Array.from(new Set([...config.names]))
+    .map(name => options.routeNameTansformer(name))
+    .filter(name => Boolean(name) && name !== INVALID_ROUTE_NAME);
 
-  const all: string[] = [];
-
-  lastDegree.forEach(routeName => {
-    all.push(...getAllRouteNames(routeName));
-  });
-
-  return {
-    all: uniqueStrArray(all),
-    lastDegree
-  };
-}
-
-function handleAddRouteName(globs: string[], routeName: RouteName, options: ContextOption): RouteName {
-  const { all, lastDegree } = getRouteNamesFromGlobs(globs, options);
-
-  return {
-    all: uniqueStrArray(routeName.all, all),
-    lastDegree: uniqueStrArray(routeName.lastDegree, lastDegree)
-  };
-}
-
-function handleDeleteRouteName(globs: string[], routeName: RouteName, options: ContextOption): RouteName {
-  const deleteRouteName = getRouteNamesFromGlobs(globs, options);
-
-  const lastDegree = routeName.lastDegree.filter(item => !deleteRouteName.lastDegree.includes(item));
-  const all = routeName.all.filter(item => !deleteRouteName.all.includes(item));
-
-  return {
-    all,
-    lastDegree
-  };
-}
-
-export function handleUpdateRouteName(params: {
-  globs: string[];
-  routeName: RouteName;
-  options: ContextOption;
-  type: 'add' | 'unlink';
-}): RouteName {
-  const { globs, routeName, options, type } = params;
-  if (type === 'add') {
-    return handleAddRouteName(globs, routeName, options);
-  }
-
-  return handleDeleteRouteName(globs, routeName, options);
-}
-
-function getRouteViewImportFromGlob(glob: string, options: ContextOption) {
-  const { rootDir } = options;
-
-  const pageDir = getRelativePathFromRoot(options.pageDir);
-
-  const prefix = `${rootDir}/${pageDir}/`;
-
-  const path = `./${glob.replace(prefix, '')}`;
-
-  return path;
-}
-
-export function getRouteViewImportsFromGlobs(globs: string[], options: ContextOption) {
-  const imports: RouteImport[] = globs
-    .map(glob => ({
-      name: getRouteNameFromGlob(glob, options),
-      path: getRouteViewImportFromGlob(glob, options)
-    }))
+  config.files = config.files
+    .map(({ name, path }) => ({ name: options.routeNameTansformer(name), path }))
     .filter(item => item.name !== INVALID_ROUTE_NAME);
 
-  return imports;
+  return config;
 }
 
-function handleAddRouteViewImport(globs: string[], routeImports: RouteImport[], options: ContextOption) {
-  const addViewImports = getRouteViewImportsFromGlobs(globs, options);
-
-  let result = routeImports.filter(item => !addViewImports.find(v => v.name === item.name));
-
-  result = result.concat(addViewImports);
-
-  result.sort((pre, current) => (pre.name > current.name ? 1 : -1));
-
-  return result;
-}
-
-function handleDeleteRouteViewImport(globs: string[], routeImports: RouteImport[], options: ContextOption) {
-  const deleteViewImports = getRouteViewImportsFromGlobs(globs, options);
-  return routeImports.filter(item => !deleteViewImports.find(v => v.name === item.name));
-}
-
-export function handleUpdateRouteViewImport(params: {
-  globs: string[];
-  routeImports: RouteImport[];
-  options: ContextOption;
-  type: 'add' | 'unlink';
-}) {
-  const { globs, routeImports, options, type } = params;
-
-  if (type === 'add') {
-    return handleAddRouteViewImport(globs, routeImports, options);
-  }
-  return handleDeleteRouteViewImport(globs, routeImports, options);
-}
-
-interface RouteConfig {
+interface RouteModuleConfig {
   component: RouteComponentType;
   hasSingleLayout: boolean;
 }
 function getRouteConfig(index: number, length: number) {
-  const actions: [boolean, RouteConfig][] = [
+  const actions: [boolean, RouteModuleConfig][] = [
     [length === 1, { component: 'self', hasSingleLayout: true }],
     [length === 2 && index === 0, { component: 'basic', hasSingleLayout: false }],
     [length === 2 && index === 1, { component: 'self', hasSingleLayout: false }],
@@ -182,7 +100,7 @@ function getRouteConfig(index: number, length: number) {
     [true, { component: 'multi', hasSingleLayout: false }]
   ];
 
-  const config: RouteConfig = {
+  const config: RouteModuleConfig = {
     component: 'self',
     hasSingleLayout: false
   };
@@ -198,8 +116,8 @@ function getRoutePathFromName(routeName: string) {
   return PATH_SPLIT_MARK + routeName.replace(new RegExp(`${PAGE_DEGREE_SPLIT_MARK}`, 'g'), PATH_SPLIT_MARK);
 }
 
-export function getRouteModuleNameFromGlob(glob: string, options: ContextOption) {
-  const routeName = getRouteNameFromGlob(glob, options);
+export function getRouteModuleNameByGlob(glob: string, options: ContextOption) {
+  const routeName = getRouteNameByGlob(glob, options.pageDir);
   const routeNames = getAllRouteNames(routeName);
 
   if (!routeNames.length) {
@@ -210,7 +128,7 @@ export function getRouteModuleNameFromGlob(glob: string, options: ContextOption)
 }
 
 export function getRouteModuleFromGlob(glob: string, options: ContextOption) {
-  const routeName = getRouteNameFromGlob(glob, options);
+  const routeName = getRouteNameByGlob(glob, options.pageDir);
   const routeNames = getAllRouteNames(routeName);
 
   const modules: RouteModule[] = routeNames.map((item, index) => {
@@ -236,11 +154,10 @@ export function getRouteModuleFromGlob(glob: string, options: ContextOption) {
   return modules;
 }
 
-export function getRouteModuleFilePath(moduleName: string, options: ContextOption, fileExtension = '.ts') {
-  const { rootDir } = options;
-  const routeModuleDir = getRelativePathFromRoot(options.routeModuleDir);
+export function getRouteModuleFilePath(moduleName: string, options: ContextOption) {
+  const { rootDir, routeModuleDir } = options;
 
-  const filePath = `${rootDir}/${routeModuleDir}/${moduleName}${fileExtension}`;
+  const filePath = `${rootDir}/${routeModuleDir}/${moduleName}.ts`;
 
   return filePath;
 }

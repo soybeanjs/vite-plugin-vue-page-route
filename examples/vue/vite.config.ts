@@ -37,8 +37,7 @@ export default defineConfig(() => {
       Inspect()
     ],
     server: {
-      host: '0.0.0.0',
-      open: true
+      host: '0.0.0.0'
     },
     build: {
       brotliSize: false,

@@ -61,11 +61,11 @@ interface Hooks {
    * @example
    * ```
    * example1:
-   * home                  home
+   * home           ==>      home
    * └── index.vue
    * example2:
-   * home                  home
-   * └── first             └── first
+   * home           ==>      home
+   * └── first               └── first
    *     └── index.vue
    * ```
    */
@@ -75,10 +75,10 @@ interface Hooks {
    * @example
    * ```
    * example1:
-   * home                  home
+   * home        ==>       home
    *                       └── index.vue
    * example2:
-   * home                  home
+   * home        ==>       home
    * └── first             └── first
    *                           └── index.vue
    * ```

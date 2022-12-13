@@ -27,5 +27,21 @@ declare namespace RouterPage {
     | 'test';
 
   /** 最后一级路由(该级路有对应的vue文件) */
-  type LastDegreeRouteKey = Extract<RouteKey, '404' | 'about' | 'demo' | 'home_fifth' | 'home_first-page' | 'home_four' | 'home_multi_first' | 'home_second-page' | 'home_third' | 'login' | 'one_two_three' | 'one_two_three-1' | 'one_two_three-ano' | 'test'>
+  type LastDegreeRouteKey = Extract<
+    RouteKey,
+    | '404'
+    | 'about'
+    | 'demo'
+    | 'home_fifth'
+    | 'home_first-page'
+    | 'home_four'
+    | 'home_multi_first'
+    | 'home_second-page'
+    | 'home_third'
+    | 'login'
+    | 'one_two_three'
+    | 'one_two_three-1'
+    | 'one_two_three-ano'
+    | 'test'
+  >;
 }
