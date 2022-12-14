@@ -1,7 +1,7 @@
 import { access, writeFile } from 'fs/promises';
 import execa from 'execa';
 import { getRouteModuleFilePath } from '../shared';
-import type { ContextOption, RouteModule } from '../types';
+import type { ContextOption, FileWatcherHooks, FileWatcherDispatch, RouteConfig, RouteModule } from '../types';
 
 async function handleEslintFormat(filePath: string) {
   const eslintBinPath = `${process.cwd()}/node_modules/eslint/bin/eslint.js`;
@@ -44,4 +44,30 @@ export function isDeleteWholeModule(deletes: string[], files: string[], moduleNa
   const remains = files.filter(item => !deletes.includes(item));
 
   return remains.every(item => !item.includes(moduleName));
+}
+
+export function createFWHooksOfGenModule(
+  _dispatchs: FileWatcherDispatch[],
+  _routeConfig: RouteConfig,
+  _options: ContextOption
+) {
+  const hooks: FileWatcherHooks = {
+    async onRenameDirWithFile() {
+      console.log('onRenameDirWithFile: ');
+    },
+    async onDelDirWithFile() {
+      console.log('onDelDirWithFile: ');
+    },
+    async onAddDirWithFile() {
+      console.log('onAddDirWithFile: ');
+    },
+    async onDelFile() {
+      console.log('onDelFile: ');
+    },
+    async onAddFile() {
+      console.log('onAddFile: ');
+    }
+  };
+
+  return hooks;
 }

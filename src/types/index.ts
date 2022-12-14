@@ -14,7 +14,7 @@ export interface PluginOption {
    * - attention: there is no blank after '**'
    * @link the detail syntax: https://github.com/micromatch/micromatch
    */
-  pageGlob: string[];
+  pageGlobs: string[];
   /**
    * relative path to the directory to generate the route declaration.
    * @default 'src/typings/page-route.d.ts'
@@ -49,7 +49,8 @@ export interface PluginOption {
    */
   routeNameTansformer(name: string): string;
   /**
-   * the import type of the page file, direct import or lazy import
+   * whether the route is lazy import
+   * @param name route name
    * @example
    * - the direct import
    * ```ts
@@ -59,14 +60,12 @@ export interface PluginOption {
    * ```ts
    * const Home = import('./views/home/index.vue');
    * ```
-   * @param names the names of the route
    */
-  importHandler(names: string[]): { name: string; lazy: boolean }[];
+  lazyImport(name: string): boolean;
 }
 
 export interface ContextOption extends PluginOption {
   rootDir: string;
-  pagePattern: RegExp[];
 }
 
 /**
@@ -116,4 +115,90 @@ export type FileWatcherEvent = 'addDir' | 'unlinkDir' | 'add' | 'unlink';
 export interface FileWatcherDispatch {
   event: FileWatcherEvent;
   path: string;
+}
+
+export interface FileWatcherHooks {
+  /**
+   * rename the directory, which includes page files
+   * @example
+   * ```
+   * example1:
+   * home                    home-new
+   * ├── first               ├── first
+   * │   └── index.vue  ==>  │   └── index.vue
+   * └── second              └── second
+   *     └── index.vue           └── index.vue
+   * example2:
+   * home                    home
+   * └── first          ==>  └── first-new
+   *     └── index.vue           └── index.vue
+   * ```
+   */
+  onRenameDirWithFile(): Promise<void>;
+  /**
+   * delete the directory, which includes page files
+   * * @example
+   * ```
+   * example1:
+   * home
+   * ├── first
+   * │   └── index.vue  ==> (delete directory home)
+   * └── second
+   *     └── index.vue
+   * example2:
+   * home                      home
+   * ├── first           ==>   └── first
+   * │   └── index.vue             └── index.vue
+   * └── second
+   *     └── index.vue
+   * ```
+   */
+  onDelDirWithFile(): Promise<void>;
+  /**
+   * add a directory, which includes page files, it may be a copy action
+   * * @example
+   * ```
+   * example1:
+   *                               home
+   *                               ├── first
+   * (add directory home)   ==>    │   └── index.vue
+   *                               └── second
+   *                                   └── index.vue
+   * example2:
+   * home                      home
+   * └── second                ├── first
+   *     └── index.vue  ==>    │   └── index.vue
+   *                           └── second
+   *                               └── index.vue
+   * ```
+   */
+  onAddDirWithFile(): Promise<void>;
+  /**
+   * delete a page file
+   * @example
+   * ```
+   * example1:
+   * home           ==>      home
+   * └── index.vue
+   * example2:
+   * home           ==>      home
+   * └── first               └── first
+   *     └── index.vue
+   * ```
+   */
+  onDelFile(): Promise<void>;
+  /**
+   * add a page file
+   * @example
+   * ```
+   * example1:
+   * home        ==>       home
+   *                       └── index.vue
+   * example2:
+   * home        ==>       home
+   * └── first             └── first
+   *                           └── index.vue
+   * ```
+   */
+  onAddFile(): Promise<void>;
 }

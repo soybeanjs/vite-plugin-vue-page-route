@@ -11,15 +11,12 @@ function isPureNumberKey(key: string) {
 }
 
 function transformImportKey(key: string) {
-  const result = isPureNumberKey(key) ? `_view_${key}` : key;
+  const tranform = isPureNumberKey(key) ? `_view_${key}` : key;
 
-  return result;
+  return tranform;
 }
 
 function getViewsCode(routeFiles: RouteFile[], options: ContextOption) {
-  const lazyImports = options.importHandler(routeFiles.map(item => item.name));
-  const checkIsLazy = (name: string) => Boolean(lazyImports.find(item => item.name === name)?.lazy);
-
   let preCode = `import type { RouteComponent } from 'vue-router';\n`;
   let code = `
 export const views: Record<
@@ -28,7 +25,7 @@ export const views: Record<
 > = {`;
 
   routeFiles.forEach(({ name, path }, index) => {
-    const isLazy = checkIsLazy(name);
+    const isLazy = options.lazyImport(name);
 
     const key = transformKey(name);
 

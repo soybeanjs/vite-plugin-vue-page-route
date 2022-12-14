@@ -1,92 +1,6 @@
-import type { FileWatcherDispatch, FileWatcherEvent } from '../types';
+import type { FileWatcherDispatch, FileWatcherHooks, FileWatcherEvent } from '../types';
 
-interface Hooks {
-  /**
-   * rename the directory, which includes page files
-   * @example
-   * ```
-   * example1:
-   * home                    home-new
-   * ├── first               ├── first
-   * │   └── index.vue  ==>  │   └── index.vue
-   * └── second              └── second
-   *     └── index.vue           └── index.vue
-   * example2:
-   * home                    home
-   * └── first          ==>  └── first-new
-   *     └── index.vue           └── index.vue
-   * ```
-   */
-  onRenameDirectoryWithFile(): Promise<void>;
-  /**
-   * delete the directory, which includes page files
-   * * @example
-   * ```
-   * example1:
-   * home
-   * ├── first
-   * │   └── index.vue  ==> (delete directory home)
-   * └── second
-   *     └── index.vue
-   * example2:
-   * home                      home
-   * ├── first           ==>   └── first
-   * │   └── index.vue             └── index.vue
-   * └── second
-   *     └── index.vue
-   * ```
-   */
-  onDeleteDirectoryWithFile(): Promise<void>;
-  /**
-   * add a directory, which includes page files, it may be a copy action
-   * * @example
-   * ```
-   * example1:
-   *                               home
-   *                               ├── first
-   * (add directory home)   ==>    │   └── index.vue
-   *                               └── second
-   *                                   └── index.vue
-   * example2:
-   * home                      home
-   * └── second                ├── first
-   *     └── index.vue  ==>    │   └── index.vue
-   *                           └── second
-   *                               └── index.vue
-   * ```
-   */
-  onAddDirectoryWithFile(): Promise<void>;
-  /**
-   * delete a page file
-   * @example
-   * ```
-   * example1:
-   * home           ==>      home
-   * └── index.vue
-   * example2:
-   * home           ==>      home
-   * └── first               └── first
-   *     └── index.vue
-   * ```
-   */
-  onDeleteFile(): Promise<void>;
-  /**
-   * add a page file
-   * @example
-   * ```
-   * example1:
-   * home        ==>       home
-   *                       └── index.vue
-   * example2:
-   * home        ==>       home
-   * └── first             └── first
-   *                           └── index.vue
-   * ```
-   */
-  onAddFile(): Promise<void>;
-}
-
-export async function fileWatcherHandler(dispatchs: FileWatcherDispatch[], hooks: Hooks) {
+export async function fileWatcherHandler(dispatchs: FileWatcherDispatch[], hooks: FileWatcherHooks) {
   const dispatchWithCategory: Record<FileWatcherEvent, string[]> = {
     addDir: [],
     unlinkDir: [],
@@ -103,27 +17,52 @@ export async function fileWatcherHandler(dispatchs: FileWatcherDispatch[], hooks
   const hasAdd = dispatchWithCategory.add.length > 0;
   const hasUnlink = dispatchWithCategory.unlink.length > 0;
 
-  const { onRenameDirectoryWithFile, onDeleteDirectoryWithFile, onAddDirectoryWithFile, onDeleteFile, onAddFile } =
-    hooks;
+  const { onRenameDirWithFile, onDelDirWithFile, onAddDirWithFile, onDelFile, onAddFile } = hooks;
 
   const conditions: [boolean, () => Promise<void>][] = [
-    [hasAddDir && hasUnlinkDir && hasAdd && hasUnlink, onRenameDirectoryWithFile],
-    [hasUnlinkDir && hasUnlink, onDeleteDirectoryWithFile],
-    [hasAddDir && hasAdd, onAddDirectoryWithFile],
-    [hasUnlink, onDeleteFile],
+    [hasAddDir && hasUnlinkDir && hasAdd && hasUnlink, onRenameDirWithFile],
+    [hasUnlinkDir && hasUnlink, onDelDirWithFile],
+    [hasAddDir && hasAdd, onAddDirWithFile],
+    [hasUnlink, onDelFile],
     [hasAdd, onAddFile]
   ];
 
-  let callback: () => Promise<void> = () => Promise.resolve();
+  const [, callback] = conditions.find(([condition]) => condition) || [true, async () => {}];
 
-  conditions.some(([condition, handler]) => {
-    if (condition) {
-      callback = handler;
+  await callback();
+}
+
+function getTheSmallLengthOfStrArr(arr: string[]) {
+  let name: string | null = null;
+  arr.forEach(item => {
+    if (name === null) {
+      name = item;
+    } else {
+      name = item.length < name.length ? item : name;
     }
-    return condition;
   });
 
-  if (callback) {
-    await callback();
-  }
+  return name;
+}
+
+export function getRenameConfig(dispatchs: FileWatcherDispatch[]) {
+  const unlinkDirs: string[] = [];
+  const addDirs: string[] = [];
+
+  dispatchs.forEach(dispatch => {
+    if (dispatch.event === 'unlinkDir') {
+      unlinkDirs.push(dispatch.path);
+    }
+    if (dispatch.event === 'addDir') {
+      addDirs.push(dispatch.path);
+    }
+  });
+
+  const delName = getTheSmallLengthOfStrArr(unlinkDirs);
+  const addName = getTheSmallLengthOfStrArr(addDirs);
+
+  return {
+    delName,
+    addName
+  };
 }

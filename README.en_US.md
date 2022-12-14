@@ -11,15 +11,15 @@ import pageRoute from '@soybeanjs/vite-plugin-vue-page-route';
 export default defineConfig({
   plugins: [pageRoute({
     pageDir: 'src/views', // default
-    pageGlob: ['**/index.{vue,tsx,jsx}', '!**/components*'], // default
+    pageGlobs: ['**/index.{vue,tsx,jsx}', '!**/components*'], // default
     routeDts: 'src/typings/page-route.d.ts', // default
     routeModuleDir: 'src/router/modules', // default
     routeModuleType: 'AuthRoute.Route', // default
     /**
      * @example _builtin_login => login
      */
-    routeNameTansformer: name => name.replace(/^_([a-zA-Z]|$)+_*/, ''), // default
-    importHandler: names => names.map(name => ({ name, lazy: true })) // default
+    routeNameTansformer: name => name.replace(/^_([a-zA-Z]|[0-9]|$)+_*/, ''), // default
+    lazyImport: _name => true // default
   })]
 });
 ```

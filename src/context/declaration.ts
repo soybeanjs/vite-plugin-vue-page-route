@@ -1,6 +1,6 @@
 import { writeFile } from 'fs/promises';
-import { ROOT_ROUTE, NOT_FOUND_ROUTE } from '../shared';
-import type { ContextOption, RouteConfig } from '../types';
+import { ROOT_ROUTE, NOT_FOUND_ROUTE, getRenamedDirConfig } from '../shared';
+import type { ContextOption, RouteConfig, FileWatcherDispatch, FileWatcherHooks } from '../types';
 
 function getDeclarationCode(routeConfig: RouteConfig) {
   let code = `declare namespace PageRoute {
@@ -51,4 +51,45 @@ export async function generateDeclaration(routeConfig: RouteConfig, options: Con
   const filePath = `${options.rootDir}/${options.routeDts}`;
 
   await writeFile(filePath, code, 'utf-8');
+}
+
+export function createFWHooksOfGenDeclarationAndViews(
+  dispatchs: FileWatcherDispatch[],
+  routeConfig: RouteConfig,
+  options: ContextOption
+) {
+  const hooks: FileWatcherHooks = {
+    async onRenameDirWithFile() {
+      const { oldRouteName, newRouteName, oldRouteFilePath, newRouteFilePath } = getRenamedDirConfig(
+        dispatchs,
+        options
+      );
+
+      routeConfig.names = routeConfig.names.map(name => name.replace(oldRouteName, newRouteName));
+
+      routeConfig.files = routeConfig.files.map(item => {
+        const name = item.name.replace(oldRouteName, newRouteName);
+        const path = item.path.replace(oldRouteFilePath, newRouteFilePath);
+
+        return {
+          name,
+          path
+        };
+      });
+    },
+    async onDelDirWithFile() {
+      console.log('onDelDirWithFile: ');
+    },
+    async onAddDirWithFile() {
+      console.log('onAddDirWithFile: ');
+    },
+    async onDelFile() {
+      console.log('onDelFile: ');
+    },
+    async onAddFile() {
+      console.log('onAddFile: ');
+    }
+  };
+
+  return hooks;
 }

@@ -1,10 +1,17 @@
 import chokidar from 'chokidar';
-import { isMatch } from 'micromatch';
-import { createPluginOptions, getGlobsOfPage, getRouteConfigByGlobs } from '../shared';
-import { generateDeclaration } from './declaration';
+import { createPluginOptions, getGlobsOfPage, getRouteConfigByGlobs, matchGlob } from '../shared';
+import { generateDeclaration, createFWHooksOfGenDeclarationAndViews } from './declaration';
 import { generateViews } from './views';
+import { createFWHooksOfGenModule } from './module';
 import { fileWatcherHandler } from './fs';
-import type { ContextOption, PluginOption, RouteConfig, FileWatcherDispatch, FileWatcherEvent } from '../types';
+import type {
+  ContextOption,
+  PluginOption,
+  RouteConfig,
+  FileWatcherDispatch,
+  FileWatcherHooks,
+  FileWatcherEvent
+} from '../types';
 
 export default class Context {
   options: ContextOption;
@@ -20,7 +27,7 @@ export default class Context {
 
     this.options = createPluginOptions(options, rootDir);
 
-    const globs = getGlobsOfPage(this.options.pageGlob, this.options.pageDir);
+    const globs = getGlobsOfPage(this.options.pageGlobs, this.options.pageDir);
 
     this.routeConfig = getRouteConfigByGlobs(globs, this.options);
 
@@ -32,43 +39,51 @@ export default class Context {
     await generateViews(this.routeConfig.files, this.options);
   }
 
-  private matchGlob(glob: string) {
-    const isFile = isMatch(glob, '**/*.*');
-    const { pageGlob } = this.options;
+  private createFileWatcherHooks(dispatchs: FileWatcherDispatch[]) {
+    const declarationAndViewsHooks = createFWHooksOfGenDeclarationAndViews(dispatchs, this.routeConfig, this.options);
+    const moduleHooks = createFWHooksOfGenModule(dispatchs, this.routeConfig, this.options);
 
-    const patterns = isFile ? pageGlob : pageGlob.filter(pattern => !pattern.includes('.'));
+    const hooks: FileWatcherHooks = {
+      async onRenameDirWithFile() {
+        await declarationAndViewsHooks.onRenameDirWithFile();
+        await moduleHooks.onRenameDirWithFile();
+      },
+      async onDelDirWithFile() {
+        await declarationAndViewsHooks.onDelDirWithFile();
+        await moduleHooks.onDelDirWithFile();
+      },
+      async onAddDirWithFile() {
+        await declarationAndViewsHooks.onAddDirWithFile();
+        await moduleHooks.onAddDirWithFile();
+      },
+      async onDelFile() {
+        await declarationAndViewsHooks.onDelFile();
+        await moduleHooks.onDelFile();
+      },
+      async onAddFile() {
+        await declarationAndViewsHooks.onAddFile();
+        await moduleHooks.onAddFile();
+      }
+    };
 
-    return patterns.every(pattern => isMatch(glob, pattern));
+    return hooks;
   }
 
   private dispatchFileWatcher(glob: string, event: FileWatcherEvent) {
-    if (!this.matchGlob(glob)) return;
+    const isMatch = matchGlob(glob, this.options);
+    if (!isMatch) return;
 
     this.dispatchStack.push({ event, path: glob });
+
     if (!this.dispatchId) {
       this.dispatchId = setTimeout(async () => {
-        console.log('this.dispatchStack: ', this.dispatchStack);
-        await fileWatcherHandler(this.dispatchStack, {
-          async onRenameDirectoryWithFile() {
-            console.log('onRenameDirectoryWithFile: ');
-          },
-          async onDeleteDirectoryWithFile() {
-            console.log('onDeleteDirectoryWithFile: ');
-          },
-          async onAddDirectoryWithFile() {
-            console.log('onAddDirectoryWithFile: ');
-          },
-          async onDeleteFile() {
-            console.log('onDeleteFile: ');
-          },
-          async onAddFile() {
-            console.log('onAddFile: ');
-          }
-        });
+        const hooks = this.createFileWatcherHooks(this.dispatchStack);
+
+        await fileWatcherHandler(this.dispatchStack, hooks);
 
         this.dispatchStack = [];
         this.dispatchId = null;
-      }, 200);
+      }, 100);
     }
   }
 

@@ -1,13 +1,13 @@
 import { access } from 'fs/promises';
 import { red, bgRed, green, bgYellow, yellow } from 'kolorist';
 import { SPLASH_MARK, PAGE_DEGREE_SPLIT_MARK, ROUTE_NAME_REG, INVALID_ROUTE_NAME, CAMEL_OR_PASCAL } from './constant';
-import { getBlobRelativePathFromRoot } from './path';
-import type { ContextOption, RouteConfig, RouteModule, RouteComponentType } from '../types';
+import { getRelativePathOfGlob } from './glob';
+import type { ContextOption, RouteConfig, RouteModule, RouteComponentType, FileWatcherDispatch } from '../types';
 
 function transformRouteName(glob: string, routeName: string, pageDir: string) {
   let name = routeName;
 
-  const filePath = getBlobRelativePathFromRoot(glob, pageDir);
+  const filePath = getRelativePathOfGlob(glob, pageDir);
 
   if (CAMEL_OR_PASCAL.test(routeName)) {
     let warning = `${bgYellow('RECOMMEND')} `;
@@ -37,7 +37,10 @@ function transformRouteName(glob: string, routeName: string, pageDir: string) {
 function getRouteNameByGlob(glob: string, pageDir: string) {
   const globSplits = glob.split(SPLASH_MARK);
 
-  const routeName = globSplits.splice(0, globSplits.length - 1).join(PAGE_DEGREE_SPLIT_MARK);
+  const isFile = glob.includes('.');
+  const sliceLength = isFile ? globSplits.length - 1 : globSplits.length;
+
+  const routeName = globSplits.splice(0, sliceLength).join(PAGE_DEGREE_SPLIT_MARK);
 
   return transformRouteName(glob, routeName, pageDir);
 }
@@ -55,8 +58,13 @@ function getAllRouteNames(routeName: string) {
   return namesWithParent;
 }
 
-function getRouteFilePathByGlob(glob: string) {
+export function getRouteFilePathByGlob(glob: string) {
   return `./${glob}`;
+}
+
+export function getRouteNameByGlobWithTransformer(glob: string, options: ContextOption) {
+  const routeName = getRouteNameByGlob(glob, options.pageDir);
+  return options.routeNameTansformer(routeName);
 }
 
 export function getRouteConfigByGlobs(globs: string[], options: ContextOption) {
@@ -190,4 +198,48 @@ export function getRouteModuleItemByRouteName(routeName: string, modules: RouteM
   });
 
   return result;
+}
+
+function getTheSmallLengthOfStrArr(arr: string[]) {
+  let name: string = arr[0];
+
+  arr.forEach(item => {
+    if (name === null) {
+      name = item;
+    } else {
+      name = item.length < name.length ? item : name;
+    }
+  });
+
+  return name;
+}
+
+export function getRenamedDirConfig(dispatchs: FileWatcherDispatch[], options: ContextOption) {
+  const unlinkDirs: string[] = [];
+  const addDirs: string[] = [];
+
+  dispatchs.forEach(dispatch => {
+    if (dispatch.event === 'unlinkDir') {
+      unlinkDirs.push(dispatch.path);
+    }
+    if (dispatch.event === 'addDir') {
+      addDirs.push(dispatch.path);
+    }
+  });
+
+  const oldDir = getTheSmallLengthOfStrArr(unlinkDirs);
+  const newDir = getTheSmallLengthOfStrArr(addDirs);
+
+  const oldRouteName = getRouteNameByGlobWithTransformer(oldDir, options);
+  const oldRouteFilePath = getRouteFilePathByGlob(oldDir);
+
+  const newRouteName = getRouteNameByGlobWithTransformer(newDir, options);
+  const newRouteFilePath = getRouteFilePathByGlob(newDir);
+
+  return {
+    oldRouteName,
+    newRouteName,
+    oldRouteFilePath,
+    newRouteFilePath
+  };
 }
