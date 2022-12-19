@@ -1,5 +1,13 @@
 import { writeFile } from 'fs/promises';
-import { ROOT_ROUTE, NOT_FOUND_ROUTE, getRenamedDirConfig } from '../shared';
+import {
+  ROOT_ROUTE,
+  NOT_FOUND_ROUTE,
+  getRenamedDirConfig,
+  getDelDirConfig,
+  getAddDirConfig,
+  getDelFileConfig,
+  getAddFileConfig
+} from '../shared';
 import type { ContextOption, RouteConfig, FileWatcherDispatch, FileWatcherHooks } from '../types';
 
 function getDeclarationCode(routeConfig: RouteConfig) {
@@ -78,16 +86,28 @@ export function createFWHooksOfGenDeclarationAndViews(
       });
     },
     async onDelDirWithFile() {
-      console.log('onDelDirWithFile: ');
+      const { delRouteName } = getDelDirConfig(dispatchs, options);
+
+      routeConfig.names = routeConfig.names.filter(name => !name.includes(delRouteName));
+      routeConfig.files = routeConfig.files.filter(item => !item.name.includes(delRouteName));
     },
     async onAddDirWithFile() {
-      console.log('onAddDirWithFile: ');
+      const config = getAddDirConfig(dispatchs, options);
+
+      routeConfig.names = routeConfig.names.concat(config.names).sort();
+      routeConfig.files = routeConfig.files.concat(config.files).sort((a, b) => (a.name > b.name ? 1 : -1));
     },
     async onDelFile() {
-      console.log('onDelFile: ');
+      const { delRouteNames } = getDelFileConfig(dispatchs, options);
+
+      routeConfig.names = routeConfig.names.filter(name => delRouteNames.every(item => !name.includes(item)));
+      routeConfig.files = routeConfig.files.filter(item => delRouteNames.every(v => !item.name.includes(v)));
     },
     async onAddFile() {
-      console.log('onAddFile: ');
+      const config = getAddFileConfig(dispatchs, options);
+
+      routeConfig.names = routeConfig.names.concat(config.names).sort();
+      routeConfig.files = routeConfig.files.concat(config.files).sort((a, b) => (a.name > b.name ? 1 : -1));
     }
   };
 

@@ -27,9 +27,6 @@ declare namespace PageRoute {
     | 'home_multi'
     | 'home_multi_first'
     | 'home_multi_second'
-    | 'home_multi_third1'
-    | 'home_multi_third1_third-child1'
-    | 'home_multi_third1_third-child2'
     | 'home_second-page'
     | 'home_third'
     | 'one'
@@ -54,13 +51,10 @@ declare namespace PageRoute {
     | 'home_four'
     | 'home_multi_first'
     | 'home_multi_second'
-    | 'home_multi_third1_third-child1'
-    | 'home_multi_third1_third-child2'
     | 'home_second-page'
     | 'home_third'
     | 'one_two_three-1'
     | 'one_two_three-ano'
-    | 'one_two_three'
     | 'test'
   >;
 }

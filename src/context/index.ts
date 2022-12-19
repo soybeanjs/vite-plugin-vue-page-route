@@ -81,6 +81,8 @@ export default class Context {
 
         await fileWatcherHandler(this.dispatchStack, hooks);
 
+        this.generate();
+
         this.dispatchStack = [];
         this.dispatchId = null;
       }, 100);

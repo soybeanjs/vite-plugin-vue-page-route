@@ -2,7 +2,14 @@ import { access } from 'fs/promises';
 import { red, bgRed, green, bgYellow, yellow } from 'kolorist';
 import { SPLASH_MARK, PAGE_DEGREE_SPLIT_MARK, ROUTE_NAME_REG, INVALID_ROUTE_NAME, CAMEL_OR_PASCAL } from './constant';
 import { getRelativePathOfGlob } from './glob';
-import type { ContextOption, RouteConfig, RouteModule, RouteComponentType, FileWatcherDispatch } from '../types';
+import type {
+  ContextOption,
+  RouteConfig,
+  RouteModule,
+  RouteComponentType,
+  FileWatcherDispatch,
+  RouteFile
+} from '../types';
 
 function transformRouteName(glob: string, routeName: string, pageDir: string) {
   let name = routeName;
@@ -67,6 +74,11 @@ export function getRouteNameByGlobWithTransformer(glob: string, options: Context
   return options.routeNameTansformer(routeName);
 }
 
+function removeInvalidRouteFiles(files: RouteFile[]) {
+  const data = [...files];
+  return files.filter(item => data.every(v => v.name === item.name || !v.name.includes(item.name)));
+}
+
 export function getRouteConfigByGlobs(globs: string[], options: ContextOption) {
   const config: RouteConfig = {
     names: [],
@@ -90,6 +102,8 @@ export function getRouteConfigByGlobs(globs: string[], options: ContextOption) {
   config.files = config.files
     .map(({ name, path }) => ({ name: options.routeNameTansformer(name), path }))
     .filter(item => item.name !== INVALID_ROUTE_NAME);
+
+  config.files = removeInvalidRouteFiles(config.files);
 
   return config;
 }
@@ -242,4 +256,73 @@ export function getRenamedDirConfig(dispatchs: FileWatcherDispatch[], options: C
     oldRouteFilePath,
     newRouteFilePath
   };
+}
+
+export function getDelDirConfig(dispatchs: FileWatcherDispatch[], options: ContextOption) {
+  const unlinkDirs: string[] = [];
+
+  dispatchs.forEach(dispatch => {
+    if (dispatch.event === 'unlinkDir') {
+      unlinkDirs.push(dispatch.path);
+    }
+  });
+
+  const delDir = getTheSmallLengthOfStrArr(unlinkDirs);
+
+  const delRouteName = getRouteNameByGlobWithTransformer(delDir, options);
+
+  return {
+    delRouteName
+  };
+}
+
+export function getAddDirConfig(dispatchs: FileWatcherDispatch[], options: ContextOption) {
+  const globs: string[] = [];
+
+  dispatchs.forEach(dispatch => {
+    if (dispatch.event === 'add') {
+      globs.push(dispatch.path);
+    }
+  });
+
+  const config = getRouteConfigByGlobs(globs, options);
+
+  return config;
+}
+
+export function getDelFileConfig(dispatchs: FileWatcherDispatch[], options: ContextOption) {
+  const delRouteNames: string[] = [];
+
+  dispatchs.forEach(dispatch => {
+    if (dispatch.event === 'unlink') {
+      const name = getRouteNameByGlobWithTransformer(dispatch.path, options);
+      delRouteNames.push(name);
+    }
+  });
+
+  return {
+    delRouteNames
+  };
+}
+
+export function getAddFileConfig(dispatchs: FileWatcherDispatch[], options: ContextOption) {
+  const addRouteNames: string[] = [];
+  const addRouteFiles: RouteFile[] = [];
+
+  dispatchs.forEach(dispatch => {
+    if (dispatch.event === 'add') {
+      const name = getRouteNameByGlobWithTransformer(dispatch.path, options);
+      addRouteNames.push(name);
+
+      const path = getRouteFilePathByGlob(dispatch.path);
+      addRouteFiles.push({ name, path });
+    }
+  });
+
+  const config: RouteConfig = {
+    names: addRouteNames,
+    files: addRouteFiles
+  };
+
+  return config;
 }
