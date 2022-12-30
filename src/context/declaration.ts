@@ -1,14 +1,6 @@
 import { writeFile } from 'fs/promises';
-import {
-  ROOT_ROUTE,
-  NOT_FOUND_ROUTE,
-  getRenamedDirConfig,
-  getDelDirConfig,
-  getAddDirConfig,
-  getDelFileConfig,
-  getAddFileConfig
-} from '../shared';
-import type { ContextOption, RouteConfig, FileWatcherDispatch, FileWatcherHooks } from '../types';
+import { ROOT_ROUTE, NOT_FOUND_ROUTE, handleEslintFormat } from '../shared';
+import type { ContextOption, RouteConfig } from '../types';
 
 function getDeclarationCode(routeConfig: RouteConfig) {
   let code = `declare namespace PageRoute {
@@ -59,57 +51,6 @@ export async function generateDeclaration(routeConfig: RouteConfig, options: Con
   const filePath = `${options.rootDir}/${options.routeDts}`;
 
   await writeFile(filePath, code, 'utf-8');
-}
 
-export function createFWHooksOfGenDeclarationAndViews(
-  dispatchs: FileWatcherDispatch[],
-  routeConfig: RouteConfig,
-  options: ContextOption
-) {
-  const hooks: FileWatcherHooks = {
-    async onRenameDirWithFile() {
-      const { oldRouteName, newRouteName, oldRouteFilePath, newRouteFilePath } = getRenamedDirConfig(
-        dispatchs,
-        options
-      );
-
-      routeConfig.names = routeConfig.names.map(name => name.replace(oldRouteName, newRouteName));
-
-      routeConfig.files = routeConfig.files.map(item => {
-        const name = item.name.replace(oldRouteName, newRouteName);
-        const path = item.path.replace(oldRouteFilePath, newRouteFilePath);
-
-        return {
-          name,
-          path
-        };
-      });
-    },
-    async onDelDirWithFile() {
-      const { delRouteName } = getDelDirConfig(dispatchs, options);
-
-      routeConfig.names = routeConfig.names.filter(name => !name.includes(delRouteName));
-      routeConfig.files = routeConfig.files.filter(item => !item.name.includes(delRouteName));
-    },
-    async onAddDirWithFile() {
-      const config = getAddDirConfig(dispatchs, options);
-
-      routeConfig.names = routeConfig.names.concat(config.names).sort();
-      routeConfig.files = routeConfig.files.concat(config.files).sort((a, b) => (a.name > b.name ? 1 : -1));
-    },
-    async onDelFile() {
-      const { delRouteNames } = getDelFileConfig(dispatchs, options);
-
-      routeConfig.names = routeConfig.names.filter(name => delRouteNames.every(item => !name.includes(item)));
-      routeConfig.files = routeConfig.files.filter(item => delRouteNames.every(v => !item.name.includes(v)));
-    },
-    async onAddFile() {
-      const config = getAddFileConfig(dispatchs, options);
-
-      routeConfig.names = routeConfig.names.concat(config.names).sort();
-      routeConfig.files = routeConfig.files.concat(config.files).sort((a, b) => (a.name > b.name ? 1 : -1));
-    }
-  };
-
-  return hooks;
+  await handleEslintFormat(filePath);
 }

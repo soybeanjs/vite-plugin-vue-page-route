@@ -52,7 +52,7 @@ function getRouteNameByGlob(glob: string, pageDir: string) {
   return transformRouteName(glob, routeName, pageDir);
 }
 
-function getAllRouteNames(routeName: string) {
+export function getAllRouteNames(routeName: string) {
   const names = routeName.split(PAGE_DEGREE_SPLIT_MARK);
 
   const namesWithParent: string[] = [];
@@ -149,6 +149,12 @@ export function getRouteModuleNameByGlob(glob: string, options: ContextOption) {
   return routeNames[0];
 }
 
+export function checkIsValidRouteModule(data: any): data is RouteModule {
+  const isObject = Object.prototype.toString.call(data) === '[object Object]';
+
+  return isObject && data.name && data.path && data.component && data.meta;
+}
+
 export function getRouteModuleFromGlob(glob: string, options: ContextOption) {
   const routeName = getRouteNameByGlob(glob, options.pageDir);
   const routeNames = getAllRouteNames(routeName);
@@ -176,24 +182,29 @@ export function getRouteModuleFromGlob(glob: string, options: ContextOption) {
   return modules;
 }
 
-export function getRouteModuleFilePath(moduleName: string, options: ContextOption) {
-  const { rootDir, routeModuleDir } = options;
+// export function getRouteModuleFromGlobs(globs: string[], options: ContextOption) {}
 
-  const filePath = `${rootDir}/${routeModuleDir}/${moduleName}.ts`;
+export function getRouteModuleFilePath(moduleName: string, options: ContextOption) {
+  const { rootDir, routeModuleDir, routeModuleExt } = options;
+
+  const filePath = `${rootDir}/${routeModuleDir}/${moduleName}.${routeModuleExt}`;
 
   return filePath;
 }
 
 export async function getIsRouteModuleFileExist(moduleName: string, options: ContextOption) {
-  const path = getRouteModuleFilePath(moduleName, options);
+  const filePath = getRouteModuleFilePath(moduleName, options);
 
   let exist = false;
   try {
-    await access(path);
+    await access(filePath);
     exist = true;
   } catch {}
 
-  return exist;
+  return {
+    exist,
+    filePath
+  };
 }
 
 export function getRouteModuleItemByRouteName(routeName: string, modules: RouteModule[]) {

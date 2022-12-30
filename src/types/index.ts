@@ -26,6 +26,11 @@ export interface PluginOption {
    */
   routeModuleDir: string;
   /**
+   * the extension to the directory to generate the code of route module const
+   * @default ts
+   */
+  routeModuleExt: string;
+  /**
    * the type declaretion of the generated route module item
    * @default AuthRoute.Route
    * @example

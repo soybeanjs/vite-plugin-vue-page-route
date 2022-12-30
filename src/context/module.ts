@@ -1,18 +1,11 @@
-import { access, writeFile } from 'fs/promises';
-import execa from 'execa';
-import { getRouteModuleFilePath } from '../shared';
-import type { ContextOption, FileWatcherHooks, FileWatcherDispatch, RouteConfig, RouteModule } from '../types';
+import { writeFile } from 'fs/promises';
+import { getRouteModuleFilePath, handleEslintFormat } from '../shared';
+import type { ContextOption, RouteModule } from '../types';
 
-async function handleEslintFormat(filePath: string) {
-  const eslintBinPath = `${process.cwd()}/node_modules/eslint/bin/eslint.js`;
+export function isDeleteWholeModule(deletes: string[], files: string[], moduleName: string) {
+  const remains = files.filter(item => !deletes.includes(item));
 
-  try {
-    await access(eslintBinPath);
-
-    await execa('node', [eslintBinPath, filePath, '--fix']);
-  } catch {
-    //
-  }
+  return remains.every(item => !item.includes(moduleName));
 }
 
 export async function generateRouteModuleCode(moduleName: string, module: RouteModule, options: ContextOption) {
@@ -38,36 +31,4 @@ export function removeRouteModule(routeName: string, children?: RouteModule[]) {
       removeRouteModule(routeName, item.children);
     });
   }
-}
-
-export function isDeleteWholeModule(deletes: string[], files: string[], moduleName: string) {
-  const remains = files.filter(item => !deletes.includes(item));
-
-  return remains.every(item => !item.includes(moduleName));
-}
-
-export function createFWHooksOfGenModule(
-  _dispatchs: FileWatcherDispatch[],
-  _routeConfig: RouteConfig,
-  _options: ContextOption
-) {
-  const hooks: FileWatcherHooks = {
-    async onRenameDirWithFile() {
-      console.log('onRenameDirWithFile: ');
-    },
-    async onDelDirWithFile() {
-      console.log('onDelDirWithFile: ');
-    },
-    async onAddDirWithFile() {
-      console.log('onAddDirWithFile: ');
-    },
-    async onDelFile() {
-      console.log('onDelFile: ');
-    },
-    async onAddFile() {
-      console.log('onAddFile: ');
-    }
-  };
-
-  return hooks;
 }

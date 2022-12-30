@@ -6,6 +6,8 @@ export const ROUTE_DTS = 'src/typings/page-route.d.ts';
 
 export const ROUTE_MODULE_DIR = 'src/router/modules';
 
+export const ROUTE_MODULE_EXT = 'ts';
+
 export const ROUTE_MODULE_TYPE = 'AuthRoute.Route';
 
 export const ROOT_ROUTE = 'root';

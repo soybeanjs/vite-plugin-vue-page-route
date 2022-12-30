@@ -1,9 +1,8 @@
 import chokidar from 'chokidar';
 import { createPluginOptions, getGlobsOfPage, getRouteConfigByGlobs, matchGlob } from '../shared';
-import { generateDeclaration, createFWHooksOfGenDeclarationAndViews } from './declaration';
+import { generateDeclaration } from './declaration';
 import { generateViews } from './views';
-import { createFWHooksOfGenModule } from './module';
-import { fileWatcherHandler } from './fs';
+import { fileWatcherHandler, createFWHooksOfGenDeclarationAndViews, createFWHooksOfGenModule } from './fs';
 import type {
   ContextOption,
   PluginOption,
@@ -41,7 +40,7 @@ export default class Context {
 
   private createFileWatcherHooks(dispatchs: FileWatcherDispatch[]) {
     const declarationAndViewsHooks = createFWHooksOfGenDeclarationAndViews(dispatchs, this.routeConfig, this.options);
-    const moduleHooks = createFWHooksOfGenModule(dispatchs, this.routeConfig, this.options);
+    const moduleHooks = createFWHooksOfGenModule(dispatchs, this.options);
 
     const hooks: FileWatcherHooks = {
       async onRenameDirWithFile() {

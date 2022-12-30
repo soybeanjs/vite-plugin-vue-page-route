@@ -1,4 +1,4 @@
-import { PAGE_DIR, PAGE_GLOB, ROUTE_DTS, ROUTE_MODULE_DIR, ROUTE_MODULE_TYPE } from './constant';
+import { PAGE_DIR, PAGE_GLOB, ROUTE_DTS, ROUTE_MODULE_DIR, ROUTE_MODULE_EXT, ROUTE_MODULE_TYPE } from './constant';
 import type { PluginOption, ContextOption } from '../types';
 
 /**
@@ -13,6 +13,7 @@ export function createPluginOptions(userOptions: Partial<PluginOption>, rootDir:
     pageGlobs: PAGE_GLOB,
     routeDts: ROUTE_DTS,
     routeModuleDir: ROUTE_MODULE_DIR,
+    routeModuleExt: ROUTE_MODULE_EXT,
     routeModuleType: ROUTE_MODULE_TYPE,
     routeNameTansformer: name => name.replace(IGNORE_UNDERLINE_REG, ''),
     lazyImport: () => true,

@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import { handleEslintFormat } from '../shared';
 import type { ContextOption, RouteFile } from '../types';
 
 function transformKey(key: string) {
@@ -59,4 +60,6 @@ export async function generateViews(routeFiles: RouteFile[], options: ContextOpt
   const filePath = `${options.rootDir}/${options.pageDir}/index.ts`;
 
   await writeFile(filePath, code, 'utf-8');
+
+  await handleEslintFormat(filePath);
 }
