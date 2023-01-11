@@ -112,7 +112,7 @@ interface RouteModuleConfig {
   component: RouteComponentType;
   hasSingleLayout: boolean;
 }
-function getRouteConfig(index: number, length: number) {
+function getRouteModuleConfig(index: number, length: number) {
   const actions: [boolean, RouteModuleConfig][] = [
     [length === 1, { component: 'self', hasSingleLayout: true }],
     [length === 2 && index === 0, { component: 'basic', hasSingleLayout: false }],
@@ -138,15 +138,22 @@ function getRoutePathFromName(routeName: string) {
   return PATH_SPLIT_MARK + routeName.replace(new RegExp(`${PAGE_DEGREE_SPLIT_MARK}`, 'g'), PATH_SPLIT_MARK);
 }
 
-export function getRouteModuleNameByGlob(glob: string, options: ContextOption) {
-  const routeName = getRouteNameByGlob(glob, options.pageDir);
+export function getRouteModuleNameByRouteName(routeName: string) {
   const routeNames = getAllRouteNames(routeName);
 
   if (!routeNames.length) {
-    throw new Error(`文件路径解析名字失败: [path]:${glob} [name]:${routeName}`);
+    throw new Error(`路由名称不正确!`);
   }
 
   return routeNames[0];
+}
+
+export function getRouteModuleNameByGlob(glob: string, options: ContextOption) {
+  const routeName = getRouteNameByGlobWithTransformer(glob, options);
+
+  const moduleName = getRouteModuleNameByRouteName(routeName);
+
+  return moduleName;
 }
 
 export function checkIsValidRouteModule(data: any): data is RouteModule {
@@ -155,12 +162,12 @@ export function checkIsValidRouteModule(data: any): data is RouteModule {
   return isObject && data.name && data.path && data.component && data.meta;
 }
 
-export function getRouteModuleFromGlob(glob: string, options: ContextOption) {
-  const routeName = getRouteNameByGlob(glob, options.pageDir);
+export function getSingleRouteModulesFromGlob(glob: string, options: ContextOption) {
+  const routeName = getRouteNameByGlobWithTransformer(glob, options);
   const routeNames = getAllRouteNames(routeName);
 
   const modules: RouteModule[] = routeNames.map((item, index) => {
-    const config = getRouteConfig(index, routeNames.length);
+    const config = getRouteModuleConfig(index, routeNames.length);
 
     const module: RouteModule = {
       name: item,
@@ -182,7 +189,67 @@ export function getRouteModuleFromGlob(glob: string, options: ContextOption) {
   return modules;
 }
 
-// export function getRouteModuleFromGlobs(globs: string[], options: ContextOption) {}
+function getSingleRouteModulesWithChildren(singleModules: RouteModule[]) {
+  const reversedModules = [...singleModules].reverse();
+
+  reversedModules.forEach((module, index) => {
+    if (index < reversedModules.length - 1) {
+      reversedModules[index + 1].children = [module];
+    }
+  });
+
+  return reversedModules[reversedModules.length - 1];
+}
+
+function recurseMergeModule(modules: RouteModule[], singleModules: RouteModule[], singleRouteLevel: number) {
+  if (!singleModules.length) return;
+
+  const currentLevelRouteModule = singleModules[singleRouteLevel];
+
+  const findIndex = modules.findIndex(module => module.name === currentLevelRouteModule.name);
+
+  if (findIndex > -1) {
+    const findModule = modules[findIndex];
+
+    if (!findModule.children) {
+      findModule.children = [];
+    }
+
+    recurseMergeModule(findModule.children!, singleModules, singleRouteLevel + 1);
+  } else {
+    const pushModule = getSingleRouteModulesWithChildren(singleModules.slice(singleRouteLevel));
+
+    modules.push(pushModule);
+  }
+}
+
+export function mergeFirstDegreeRouteModule(firstDegreeRouteModule: RouteModule, singleModules: RouteModule[]) {
+  if (!firstDegreeRouteModule.children) {
+    firstDegreeRouteModule.children = [];
+  }
+
+  recurseMergeModule(firstDegreeRouteModule.children!, singleModules, 1);
+}
+
+export function getTotalRouteModuleFromGlobs(globs: string[], options: ContextOption) {
+  let module: RouteModule;
+
+  globs.forEach((glob, index) => {
+    const modules = getSingleRouteModulesFromGlob(glob, options);
+
+    const [firstModule] = modules;
+
+    if (index === 0) {
+      module = firstModule;
+    }
+
+    if (firstModule.name === module.name) {
+      mergeFirstDegreeRouteModule(module, modules);
+    }
+  });
+
+  return module!;
+}
 
 export function getRouteModuleFilePath(moduleName: string, options: ContextOption) {
   const { rootDir, routeModuleDir, routeModuleExt } = options;

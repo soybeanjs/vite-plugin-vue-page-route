@@ -1,4 +1,4 @@
-import { writeFile } from 'fs/promises';
+import { ensureFile, writeFile } from 'fs-extra';
 import { getRouteModuleFilePath, handleEslintFormat } from '../shared';
 import type { ContextOption, RouteModule } from '../types';
 
@@ -14,6 +14,8 @@ export async function generateRouteModuleCode(moduleName: string, module: RouteM
   const code = `const ${moduleName}: ${options.routeModuleType} = ${JSON.stringify(
     module
   )};\n\nexport default ${moduleName};`;
+
+  await ensureFile(filePath);
 
   await writeFile(filePath, code, 'utf-8');
 

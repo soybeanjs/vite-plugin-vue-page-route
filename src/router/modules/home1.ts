@@ -1,16 +1,9 @@
-const home: AuthRoute.Route = {
+const home1: AuthRoute.Route = {
   name: 'home1',
   path: '/home1',
   component: 'basic',
   meta: { title: 'home1', icon: 'mdi:menu' },
   children: [
-    { name: 'home1_third', path: '/home1/third', component: 'self', meta: { title: 'home1_third', icon: 'mdi:menu' } },
-    {
-      name: 'home1_second-page',
-      path: '/home1/second-page',
-      component: 'self',
-      meta: { title: 'home1_second-page', icon: 'mdi:menu' }
-    },
     {
       name: 'home1_multi',
       path: '/home1/multi',
@@ -50,16 +43,8 @@ const home: AuthRoute.Route = {
           meta: { title: 'home1_multi_first', icon: 'mdi:menu' }
         }
       ]
-    },
-    { name: 'home1_four', path: '/home1/four', component: 'self', meta: { title: 'home1_four', icon: 'mdi:menu' } },
-    {
-      name: 'home1_first-page',
-      path: '/home1/first-page',
-      component: 'self',
-      meta: { title: 'home1_first-page', icon: 'mdi:menu' }
-    },
-    { name: 'home1_fifth', path: '/home1/fifth', component: 'self', meta: { title: 'home1_fifth', icon: 'mdi:menu' } }
+    }
   ]
 };
 
-export default home;
+export default home1;
