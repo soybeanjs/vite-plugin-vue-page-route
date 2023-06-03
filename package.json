@@ -1,6 +1,6 @@
 {
   "name": "@soybeanjs/router-page",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "author": {
     "name": "Soybean",
@@ -34,7 +34,7 @@
     "esno": "esno",
     "cleanup": "esno ./scripts/cleanup.ts",
     "update-pkg": "ncu --deep -u",
-    "update-version": "bumpp package.json",
+    "update-version": "bumpp **/package.json !**/node_modules",
     "publish-pkg": "pnpm -r publish --access public",
     "release": "pnpm update-version && pnpm publish-pkg",
     "sync-pkg": "esno ./scripts/sync.ts",
